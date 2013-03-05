@@ -3,6 +3,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.jar.JarInputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created with IntelliJ IDEA.
@@ -44,6 +46,20 @@ public class QueryForm {
         }
 
     }
+
+    /**
+     * Lees de categorie
+     */
+    private String LeesCategorie(String tekst)  {
+        String cat = "";
+        Pattern pat = Pattern.compile("^\\{\\{\\{\\s*(.*)");
+        Matcher mat = pat.matcher(tekst);
+        if(mat.find()) {
+            cat = mat.group(1);
+        }
+        return cat;
+    }
+
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("QueryForm");
