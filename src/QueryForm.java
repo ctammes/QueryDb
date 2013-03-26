@@ -1,8 +1,9 @@
+import nl.ctammes.common.MijnIni;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,11 +17,15 @@ import java.util.regex.Pattern;
 public class QueryForm {
     private JTextField txtFilenaam;
     private JButton btnLees;
-    private JPanel queryPanel;
+    private JPanel mainPanel;
     private JTextField txtCategorie;
     private JTextField txtTitel;
     private JTextArea txtTekst;
     private JButton btnOpslaan;
+    private JButton btnFileChooser;
+
+    private MijnIni ini = null;
+    private String inifile = "QueryDb.ini";
 
 
     public QueryForm() {
@@ -29,6 +34,27 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 File queryFile = new File(txtFilenaam.getText());
                 JOptionPane.showMessageDialog(null, queryFile, "Info", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        btnFileChooser.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JFileChooser fc = new JFileChooser();
+                fc.setCurrentDirectory(new File(txtFilenaam.getText()));
+                fc.setDialogTitle("Selecteer Everpad database directory");
+                fc.setDialogType(JFileChooser.OPEN_DIALOG);
+                fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    txtFilenaam.setText(fc.getSelectedFile().toString());
+                    if (ini == null) {
+                        ini = new MijnIni(inifile);
+                    }
+                    ini.schrijf("Algemeen", "queryfile", txtFilenaam.getText());
+                }
+                else {
+                    //Tomboy2Everpad.log.info("No Selection ");
+                }
             }
         });
     }
@@ -63,7 +89,7 @@ public class QueryForm {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("QueryForm");
-        frame.setContentPane(new QueryForm().queryPanel);
+        frame.setContentPane(new QueryForm().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
