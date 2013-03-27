@@ -5,10 +5,7 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,9 +43,6 @@ public class QueryFormTest {
             String regel = in.readLine();
             while (regel != null) {
                 regel = in.readLine();
-//                if (regel.matches("^\\{\\{\\{.*")) {
-//                    System.out.println("Categorie: " + regel);
-//                }
 
                 // Lees de categorie
                 Pattern pat = Pattern.compile("^\\{\\{\\{\\s*(.*)");
@@ -79,6 +73,10 @@ public class QueryFormTest {
                 System.out.printf("Categorie: %s -> titel: %s\n", entry.getValue(), entry.getKey());
             }
         }
+
+//        ArrayList<String> categorien = QueryForm.leesCategorien(info);
+
+//        ArrayList<String> titels = QueryForm.leesTitels(info, "admin functies");
 
     }
 
