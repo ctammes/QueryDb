@@ -97,8 +97,17 @@ public class QueryForm {
                 }
             }
         });
+        cmbTitel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+
+            }
+        });
     }
 
+    /**
+     * Doorloop querybestand en sla categorie/titel op
+     */
     private void leesFile() {
         info = new HashMap<String, String>();
         try {
@@ -107,6 +116,7 @@ public class QueryForm {
 
             String categorie = "";
             String regel = in.readLine();
+            boolean leesTitel = false;
             while (regel != null) {
                 regel = in.readLine();
 
@@ -118,11 +128,21 @@ public class QueryForm {
                 }
 
                 // Lees de titel
-                pat = Pattern.compile("^-+\\s*(.*)");
-                mat = pat.matcher(regel);
-                if(mat.find()) {
-                    info.put(mat.group(1), categorie);
+                if (leesTitel) {
+                    pat = Pattern.compile("^-+\\s*(.*)");
+                    mat = pat.matcher(regel);
+                    if(mat.find()) {
+                        info.put(mat.group(1), categorie);
+                    }
                 }
+
+//                if (regel.trim().equals("") || regel.startsWith("{{") || regel.startsWith("--")) {
+                if (regel.trim().equals("") || regel.startsWith("{{")) {
+                    leesTitel = true;
+                } else {
+                    leesTitel = false;
+                }
+
             }
 
 

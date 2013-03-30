@@ -39,8 +39,13 @@ public class QueryFormTest {
             File file = new File(queryFile);
             BufferedReader in = new BufferedReader(new FileReader(file));
 
+            QueryDb db = new QueryDb("/home/chris/IdeaProjects/java/QueryDb", "QueryDb.db");
             String categorie = "";
+            String titel = "";
+            StringBuffer tekst = new StringBuffer();
             String regel = in.readLine();
+            boolean leesTitel = false;      // de volgende regel mag een titel zijn
+            Query query = null;
             while (regel != null) {
                 regel = in.readLine();
 
@@ -48,17 +53,42 @@ public class QueryFormTest {
                 Pattern pat = Pattern.compile("^\\{\\{\\{\\s*(.*)");
                 Matcher mat = pat.matcher(regel);
                 if(mat.find()) {
+                    if (query != null && tekst != null && tekst.length() > 0) {
+                        query.setTekst(tekst.toString());
+                        db.schrijfQuery(query);
+                    }
+                    System.out.println("tekst: " + tekst + "\n");
                     categorie = mat.group(1);
-//                    System.out.println("Categorie: " + categorie);
+                    query = new Query(categorie);
+                    query.setTekst(tekst.toString());
+                    System.out.println("Categorie: " + categorie);
+                    tekst = new StringBuffer();
+                } else if (leesTitel) {                     // Lees de titel
+                    if (query != null && tekst.length() > 0) {
+                        query.setTekst(tekst.toString());
+                        db.schrijfQuery(query);
+                    }
+                    System.out.println("tekst: " + tekst + "\n");
+                    pat = Pattern.compile("^-+\\s*(.*)");
+                    mat = pat.matcher(regel);
+                    if(mat.find()) {
+                        titel = mat.group(1);
+                        System.out.println("Titel: " + titel);
+                        info.put(titel, categorie);
+                        tekst = new StringBuffer();
+                        query.setTitel(titel);
+                    }
+                } else {
+                    tekst.append(regel + "\n");
                 }
 
-                // Lees de titel
-                pat = Pattern.compile("^-+\\s*(.*)");
-                mat = pat.matcher(regel);
-                if(mat.find()) {
-//                    System.out.println("Titel: " + mat.group(1));
-                    info.put(mat.group(1), categorie);
+//                if (regel.trim().equals("") || regel.startsWith("{{") || regel.startsWith("--")) {
+                if (regel.trim().equals("") || regel.startsWith("{{")) {
+                    leesTitel = true;
+                } else {
+                    leesTitel = false;
                 }
+
             }
 
 
