@@ -1,6 +1,8 @@
 import nl.ctammes.common.Sqlite;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.TreeSet;
 
 /**
  * Created with IntelliJ IDEA.
@@ -57,12 +59,63 @@ public class QueryDb extends Sqlite {
         super.sluitDb();
     }
 
-    public ResultSet leesQuery(Long id) {
+    public ResultSet leesQueryId(Long id) {
         String sql = "select * from query" +
                 " where id = " + Long.toString(id);
         return execute(sql);
     }
 
+    public ArrayList<String> leesCategorien() {
+        String sql = "select distinct categorie from query order by categorie";
+        ResultSet rst = execute(sql);
+
+        TreeSet<String> result = new TreeSet<String>();
+        try {
+            while (rst.next()) {
+                result.add(rst.getString("categorie"));
+            }
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return new ArrayList<String>(result);
+    }
+
+    public ArrayList<String> leesTitels(String categorie) {
+        String sql = "select titel from query where categorie='" + categorie.replaceAll("'", "''") + "'";
+        ResultSet rst = execute(sql);
+
+        TreeSet<String> result = new TreeSet<String>();
+        try {
+            while (rst.next()) {
+                result.add(rst.getString("titel"));
+            }
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return new ArrayList<String>(result);
+    }
+
+
+    public String leesTekst(String categorie, String titel) {
+        String sql = "select tekst from query where categorie='" + categorie.replaceAll("'", "''") + "' and titel = '" + titel.replaceAll("'", "''") + "'";
+        ResultSet rst = execute(sql);
+
+        String result = "";
+        try {
+            while (rst.next()) {
+                result = rst.getString("tekst");
+            }
+        } catch(Exception e) {
+            System.out.println(e.getMessage() + " - " + sql);
+        }
+
+        return result;
+
+
+
+    }
     public boolean schrijfQuery(Query query) {
 
         String categorie = query.getCategorie().replaceAll("'", "''");
@@ -73,8 +126,6 @@ public class QueryDb extends Sqlite {
         String sql = "insert into query" +
                 " (categorie, titel, tekst)" +
                 " values (" + values + ")";
-        System.out.println(sql);
-//        Tomboy2Everpad.log.fine("sql: " + sql);
         executeNoResult(sql);
         return false;
 

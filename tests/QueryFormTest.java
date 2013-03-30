@@ -110,4 +110,51 @@ public class QueryFormTest {
 
     }
 
+    @Test
+    public void testParseQuery() {
+        String tekst = "set @klantenid=90052148;\n" +
+                "SELECT med.ais_record_id\n" +
+                "FROM mediq.medicijnen med\n" +
+                "JOIN `z-index`.artikelen a on med.atkode = a.zinummer\n" +
+                "JOIN mediq.klanten k on med.klanten_id = k.id\n" +
+                "JOIN mediq.apotheken apo ON k.apotheek_id = apo.id\n" +
+                "WHERE med.proaktief = 'Y'\n" +
+                "AND med.apotheek_bestelbaar = 'Y'\n" +
+                "AND med.gewijzigd_door_klant = 'N'\n" +
+                "AND med.herhaling_besteld='N'\n" +
+                "AND med.klanten_id = @klantenid\n" +
+                "AND DATE_ADD(med.herhalingsdatum, INTERVAL -63 DAY)  <=  '\".  @datum .\"'\n" +
+                "AND klantstatus = 'A'\n" +
+                "AND k.actief = 'Y'\n" +
+                "GROUP BY med.id ;";
+        if (tekst.contains("@klantenid")) {
+            tekst = tekst.replace("@klantenid", "12345");
+        }
+        System.out.println(tekst);
+
+    }
+
+    @Test
+    public void testFormatDatum() {
+        String tekst = "where zoekdatum=@zoekdatum and vervaldatum=@vervaldatum and datum=@datum";
+        if (tekst.contains("@zoekdatum")) {
+            tekst = tekst.replace("@zoekdatum", formatDatum("12-03-2013", 1));
+        }
+
+        tekst = tekst.replaceAll("@[A-Z]*datum", formatDatum("12-03-2013", 2));
+        System.out.println(tekst);
+
+    }
+
+    private String formatDatum(String datum, int format) {
+        String result = "";
+        if (format == 1) {
+            result = datum.substring(6, 10) + datum.substring(3, 5) + datum.substring(0, 2);
+        } else if (format == 2) {
+            result = datum.substring(6, 10) + "-" + datum.substring(3, 5) + "-" +  datum.substring(0, 2);
+        }
+
+        return result;
+    }
+
 }
