@@ -63,6 +63,7 @@ public class QueryForm {
 
     public QueryForm() {
         txtFilenaam.setText(queryFile);
+        //TODO datum vervangen door systeemdatum
 
         btnVerwerk.addActionListener(new ActionListener() {
             @Override
@@ -244,6 +245,11 @@ public class QueryForm {
         }
     }
 
+    /**
+     * Vervang de veldnamen door waarden
+     * @param tekst
+     * @return
+     */
     private String parseQuery(String tekst) {
         if (tekst.contains("@apotheek_id")) {
             tekst = tekst.replace("@apotheek_id", txtApotheekId.getText());
@@ -270,7 +276,7 @@ public class QueryForm {
         }
 
         if (txtDatum.getText().length()>0) {
-            tekst = tekst.replaceAll("@[A-Z]datum", formatDatum(txtDatum.getText(), 2));
+            tekst = tekst.replaceAll("@[A-Z]*datum", formatDatum(txtDatum.getText(), 2));
         }
 
 
@@ -278,7 +284,7 @@ public class QueryForm {
     }
 
     /**
-     * Formatteer datum
+     * Formatteer de datum afhankelijk van het veld
      * @param datum dd-mm-jjjj
      * @param format 1=zoekdatum 2=omgekeerd
      * @return
