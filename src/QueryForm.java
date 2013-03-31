@@ -41,6 +41,8 @@ public class QueryForm {
     private JFormattedTextField txtDatum;
     private JTextField txtZoekTitel;
     private JButton btnZoekTitel;
+    private JButton btnVervers;
+    private JButton btnklembord;
 
     private static MijnIni ini = null;
     private static String inifile = "QueryDb.ini";
@@ -51,7 +53,7 @@ public class QueryForm {
 
     private static QueryDb db = null;
     private String categorie;
-    private String titel;
+    private Integer queryId;
 
     // initialiseer logger
     public static Logger log = Logger.getLogger(QueryForm.class.getName());
@@ -120,8 +122,8 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (cmbTitel.getSelectedItem() != null) {
                     Titels titel = (Titels) cmbTitel.getSelectedItem();
-                    int id = titel.getId();
-                    String tekst = db.leesTekstById(id);
+                    queryId = titel.getId();
+                    String tekst = db.leesTekstById(queryId);
                     txtTekst.setText(parseQuery(tekst));
                 }
             }
@@ -143,6 +145,13 @@ public class QueryForm {
                     DefaultComboBoxModel mod=new DefaultComboBoxModel(titels);
                     cmbTitel.setModel(mod);
                 }
+            }
+        });
+        btnVervers.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                String tekst = txtTekst.getText();
+                txtTekst.setText(parseQuery(tekst));
             }
         });
     }

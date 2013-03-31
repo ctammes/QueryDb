@@ -13,16 +13,16 @@ import java.util.TreeSet;
  */
 public class QueryDb extends Sqlite {
 
-    private Long id;
+    private Integer id;
     private String categorie;
     private String titel;
     private String tekst;
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
