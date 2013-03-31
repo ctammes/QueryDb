@@ -25,7 +25,7 @@ public class Titels {
     @Override
     // getSelectedItem() geeft de toString waarde
     public String toString(){
-//        return Integer.toString(id);
+        // return Integer.toString(id);
         return titel;
     }
 }

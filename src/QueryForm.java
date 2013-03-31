@@ -107,32 +107,9 @@ public class QueryForm {
             public void itemStateChanged(ItemEvent itemEvent) {
                 if (cmbCategorie.getSelectedItem() != null) {
                     categorie = cmbCategorie.getSelectedItem().toString();
-                    ArrayList<Object> titels = zoekTitelsDbTest(cmbCategorie.getSelectedItem().toString());
-                    ArrayList<Titels> titels1 = zoekTitelsDbTest1(cmbCategorie.getSelectedItem().toString());
-//                    Titels[] titels = leesTitelsDb(cmbCategorie.getSelectedItem().toString());
-//                    Vector model = new Vector();
-//                    Object[] model = new Object[]{titels};
-//                    int i = 0;
-//                    for (Map.Entry titel: titels.entrySet()) {
-//                    for (Titels titel: titels) {
-//                        System.out.println(titel.getKey().toString() + " - " + titel.getValue().toString());
-//                        System.out.println(titel.getId().toString() + " - " + titel.getTitel().toString());
-//                        model.addElement(titel);
-//                    }
-                    for (Titels titel: titels1) {
-                        System.out.println(titel.getId());
-                    }
-
-
-                    DefaultComboBoxModel mod = new DefaultComboBoxModel(titels.toArray());
+                    Object[] titels = leesTitelsDb(categorie);
+                    DefaultComboBoxModel mod=new DefaultComboBoxModel(titels);
                     cmbTitel.setModel(mod);
-
-
-//                    cmbTitel.removeAllItems();
-//                    for (Map.Entry titel: titels.entrySet()) {
-//                        System.out.println(titel.getKey().toString() + " - " + titel.getValue().toString());
-//                        cmbTitel.addItem(new Titels(Integer.valueOf(titel.getKey().toString()), titel.getValue().toString()));
-//                    }
                 }
             }
         });
@@ -144,29 +121,9 @@ public class QueryForm {
                 if (cmbTitel.getSelectedItem() != null) {
                     Titels titel = (Titels) cmbTitel.getSelectedItem();
                     int id = titel.getId();
-                    System.out.println("selected: " + titel.getId());
                     String tekst = db.leesTekstById(id);
-                    txtTekst.setText(tekst);
-//                    System.out.println(titel.getId() + " - " + titel.getTitel());
+                    txtTekst.setText(parseQuery(tekst));
                 }
-/*
-                if (cmbTitel.getSelectedItem() != null) {
-                    int i = cmbTitel.getSelectedIndex();
-                    Titels titel1 = (Titels) cmbTitel.getItemAt(i);
-//                    Titels titel1 = (Titels) cmbTitel.getSelectedItem();
-                    System.out.printf("%d - %s\n", titel1.getId(), titel1.getTitel());
-                    String tekst = db.leesTekstById(titel1.getId());
-//                    titel = cmbTitel.getSelectedItem().toString();
-//                    System.out.println(categorie + " - " + titel);
-//                    String tekst = db.leesTekst(categorie, titel);
-                    tekst = parseQuery(tekst);
-                    txtTekst.setText(tekst);
-
-                    StringSelection stringSelection = new StringSelection( tekst );
-                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                    clipboard.setContents( stringSelection, stringSelection);
-                }
-*/
             }
         });
 
@@ -182,37 +139,9 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 String sleutel = txtZoekTitel.getText();
                 if (sleutel.length() > 0) {
-                    ArrayList<Object> titels = zoekTitelsDbTest(sleutel);
-                    ArrayList<Titels> titels1 = zoekTitelsDbTest1(sleutel);
-                    Object[] titels2 = zoekTitelsDbTest2(sleutel);
-
-                    System.out.println("Objecten:");
-                    for (Object titel: titels) {
-                        Titels titel1 = (Titels) titel;
-                        System.out.println(titel1.getId() + " - " + titel1.getTitel());
-                    }
-
-//                    System.out.println("Objecten2:");
-//                    for (Object titel: titels2) {
-//                        System.out.println(titel.getId() + " - " + titel.getTitel());
-//                    }
-                    DefaultComboBoxModel mod=new DefaultComboBoxModel(titels2);
+                    Object[] titels = zoekTitelsDb(sleutel);
+                    DefaultComboBoxModel mod=new DefaultComboBoxModel(titels);
                     cmbTitel.setModel(mod);
-
-                    System.out.println("Titels:");
-                    for (Titels titel: titels1) {
-                        System.out.println(titel.getId() + " - " + titel.getTitel());
-                    }
-
-//                    DefaultComboBoxModel mod=new DefaultComboBoxModel(titels);
-//                    jComboBox1.setModel(mod);
-
-
-//                    ArrayList<String> titels =  zoekTitelsDb(sleutel);
-//                    cmbTitel.removeAllItems();
-//                    for (Titels titel: titels1) {
-//                        cmbTitel.addItem(titel.getTitel());
-//                    }
                 }
             }
         });
@@ -283,52 +212,29 @@ public class QueryForm {
     }
 
     /**
-     * Lees de categorien
+     * Lees de categorien uit de database
      * @return
      */
-    private ArrayList<String> leesCategorien() {
-        TreeSet<String> categorien = new TreeSet<String>(info.values());
-        return new ArrayList<String>(categorien);
-    }
-
     private ArrayList<String> leesCategorienDb() {
         return db.leesCategorien();
     }
 
     /**
-     * Lees de Titels bij een categorie
+     * Lees titels uit de database ahv. categorie
      * @param categorie
      * @return
      */
-    private ArrayList<String> leesTitels(String categorie) {
-        ArrayList<String> titels = new ArrayList<String>();
-        for (Map.Entry<String, String> entry: info.entrySet()) {
-            if (entry.getValue().equals(categorie)) {
-                titels.add(entry.getKey());
-            }
-        }
-        return titels;
-
-    }
-
-    private Titels[] leesTitelsDb(String categorie) {
+    private Object[] leesTitelsDb(String categorie) {
         return db.leesTitels(categorie);
     }
 
-    private ArrayList<String> zoekTitelsDb(String sleutel) {
+    /**
+     * Zoek titels uit de database ahv zoeksleutel
+     * @param sleutel
+     * @return
+     */
+    private Object[] zoekTitelsDb(String sleutel) {
         return db.zoekTitels(sleutel);
-    }
-
-    private ArrayList<Object> zoekTitelsDbTest(String sleutel) {
-        return db.zoekTitelsTest(sleutel);
-    }
-
-    private ArrayList<Titels> zoekTitelsDbTest1(String sleutel) {
-        return db.zoekTitelsTest1(sleutel);
-    }
-
-    private Object[] zoekTitelsDbTest2(String sleutel) {
-        return db.zoekTitelsTest2(sleutel);
     }
 
     private void vulCategorien() {
@@ -393,6 +299,32 @@ public class QueryForm {
 
         return result;
     }
+
+    /**
+     * Lees de categorien
+     * @return
+     */
+    private ArrayList<String> leesCategorien() {
+        TreeSet<String> categorien = new TreeSet<String>(info.values());
+        return new ArrayList<String>(categorien);
+    }
+
+    /**
+     * Lees de titels bij een categorie
+     * @param categorie
+     * @return
+     */
+    private ArrayList<String> leesTitels(String categorie) {
+        ArrayList<String> titels = new ArrayList<String>();
+        for (Map.Entry<String, String> entry: info.entrySet()) {
+            if (entry.getValue().equals(categorie)) {
+                titels.add(entry.getKey());
+            }
+        }
+        return titels;
+
+    }
+
 
     public static void main(String[] args) {
         String logDir = ".";

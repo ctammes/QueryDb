@@ -110,76 +110,28 @@ public class QueryDb extends Sqlite {
         return new ArrayList<String>(result);
     }
 
-    public Titels[] leesTitels(String categorie) {
+    public Object[] leesTitels(String categorie) {
+        Object[] items = new Titels[50];
         String sql = "select id, titel from query where categorie='" + categorie.replaceAll("'", "''") + "'";
         ResultSet rst = execute(sql);
-
-//        TreeMap<Integer, String> result = new TreeMap<Integer, String>();
-        Titels[] result = new Titels[50];
-        int i = 0;
-        try {
-            while (rst.next()) {
-                result[i++] = new Titels(rst.getInt("id"), rst.getString("titel"));
-//                result.put(rst.getInt("id"), rst.getString("titel"));
-            }
-        } catch(Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        return result;
-    }
-
-
-    public ArrayList<String> zoekTitels(String sleutel) {
-        String sql = "select titel from query where titel like '%" + sleutel.replaceAll("'", "''") + "%'";
-        ResultSet rst = execute(sql);
-        System.out.println(sql);
-        TreeSet<String> result = new TreeSet<String>();
-        try {
-            while (rst.next()) {
-                result.add(rst.getString("titel"));
-            }
-        } catch(Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        return new ArrayList<String>(result);
-    }
-
-
-    public ArrayList<Object> zoekTitelsTest(String sleutel) {
-        ArrayList<Object> items = new ArrayList<Object>();
-        ResultSet rs = execute("select id,titel from query where titel like '%" +  sleutel + "%'");
-        try {
-            while (rs.next()) {
-                items.add(new Titels(Integer.parseInt(rs.getString(1)), rs.getString(2)));
-            }
-        } catch(Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return items;
-    }
-
-    public ArrayList<Titels> zoekTitelsTest1(String sleutel) {
-        ArrayList<Titels> items = new ArrayList<Titels>();
-        ResultSet rs = execute("select id,titel from query where titel like '%" +  sleutel + "%'");
-        try {
-            while (rs.next()) {
-                items.add(new Titels(Integer.parseInt(rs.getString(1)), rs.getString(2)));
-            }
-        } catch(Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return items;
-    }
-
-    public Object[] zoekTitelsTest2(String sleutel) {
-        Object[] items = new Titels[50];
-        ResultSet rs = execute("select id,titel from query where titel like '%" +  sleutel + "%'");
         try {
             int i = 0;
-            while (rs.next()) {
-                items[i++] = (new Titels(Integer.parseInt(rs.getString(1)), rs.getString(2)));
+            while (rst.next()) {
+                items[i++] = (new Titels(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
+            }
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return items;
+    }
+
+    public Object[] zoekTitels(String sleutel) {
+        Object[] items = new Titels[50];
+        ResultSet rst = execute("select id, titel from query where titel like '%" +  sleutel + "%'");
+        try {
+            int i = 0;
+            while (rst.next()) {
+                items[i++] = (new Titels(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
             }
         } catch(Exception e) {
             System.out.println(e.getMessage());
