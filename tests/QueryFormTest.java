@@ -57,21 +57,26 @@ public class QueryFormTest {
                         query.setTekst(tekst.toString());
                         db.schrijfQuery(query);
                     }
-                    System.out.println("tekst: " + tekst + "\n");
+                    System.out.println("tekst1: " + tekst + "\n");
                     categorie = mat.group(1);
+
+                    if (categorie.equals("bestellingen")) {
+                        break;
+                    }
+
                     query = new Query(categorie);
                     query.setTekst(tekst.toString());
                     System.out.println("Categorie: " + categorie);
                     tekst = new StringBuffer();
                 } else if (leesTitel) {                     // Lees de titel
-                    if (query != null && tekst.length() > 0) {
-                        query.setTekst(tekst.toString());
-                        db.schrijfQuery(query);
-                    }
-                    System.out.println("tekst: " + tekst + "\n");
                     pat = Pattern.compile("^-+\\s*(.*)");
                     mat = pat.matcher(regel);
                     if(mat.find()) {
+                        if (query != null && tekst.length() > 0) {
+                            query.setTekst(tekst.toString());
+                            db.schrijfQuery(query);
+                        }
+                        System.out.println("tekst2: " + tekst + "\n");
                         titel = mat.group(1);
                         System.out.println("Titel: " + titel);
                         info.put(titel, categorie);
@@ -79,7 +84,14 @@ public class QueryFormTest {
                         query.setTitel(titel);
                     }
                 } else {
-                    tekst.append(regel + "\n");
+                    if (!regel.startsWith("}}}")) {
+                        tekst.append(regel + "\n");
+                    } else {
+                        if (query != null && tekst != null && tekst.length() > 0) {
+                            query.setTekst(tekst.toString());
+                            db.schrijfQuery(query);
+                        }
+                    }
                 }
 
 //                if (regel.trim().equals("") || regel.startsWith("{{") || regel.startsWith("--")) {
@@ -106,7 +118,7 @@ public class QueryFormTest {
 
 //        ArrayList<String> categorien = QueryForm.leesCategorien(info);
 
-//        ArrayList<String> titels = QueryForm.leesTitels(info, "admin functies");
+//        ArrayList<String> Titels = QueryForm.leesTitels(info, "admin functies");
 
     }
 

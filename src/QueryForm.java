@@ -2,9 +2,6 @@ import nl.ctammes.common.MijnIni;
 import nl.ctammes.common.MijnLog;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -12,10 +9,8 @@ import java.awt.event.ItemListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeSet;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -43,7 +38,9 @@ public class QueryForm {
     private JTextField txtKlantId;
     private JTextField txtKlantKlant_id;
     private JTextField txtKlantAis_id;
-    private JTextField txtDatum;
+    private JFormattedTextField txtDatum;
+    private JTextField txtZoekTitel;
+    private JButton btnZoekTitel;
 
     private static MijnIni ini = null;
     private static String inifile = "QueryDb.ini";
@@ -63,20 +60,24 @@ public class QueryForm {
 
     public QueryForm() {
         txtFilenaam.setText(queryFile);
-        //TODO datum vervangen door systeemdatum
+        txtDatum.setText(new SimpleDateFormat("dd-MM-yyyy").format(new Date()).toString());
 
         btnVerwerk.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                leesFile();
-                if (info.size() == 0) {
-                    String tekst = "Geen informatie gevonden in " + queryFile;
-                    JOptionPane.showMessageDialog(null, tekst, "Info", JOptionPane.INFORMATION_MESSAGE);
-                    log.info(tekst);
-                } else {
-                    vulCategorien();
+                if (JOptionPane.showConfirmDialog(null, "Database wordt leeggemaakt. Doorgaan?", "Bevestig", JOptionPane.YES_NO_CANCEL_OPTION) == JOptionPane.YES_OPTION) {
+                    btnVerwerk.setEnabled(false);
+                    db.truncateQuery();
+                    leesFile();
+                    btnVerwerk.setEnabled(true);
+                    if (info.size() == 0) {
+                        String tekst = "Geen informatie gevonden in " + queryFile;
+                        JOptionPane.showMessageDialog(null, tekst, "Info", JOptionPane.INFORMATION_MESSAGE);
+                        log.info(tekst);
+                    } else {
+                        vulCategorien();
+                    }
                 }
-
             }
         });
 
@@ -106,22 +107,58 @@ public class QueryForm {
             public void itemStateChanged(ItemEvent itemEvent) {
                 if (cmbCategorie.getSelectedItem() != null) {
                     categorie = cmbCategorie.getSelectedItem().toString();
-                    ArrayList<String> titels = leesTitelsDb(cmbCategorie.getSelectedItem().toString());
-                    cmbTitel.removeAllItems();
-                    for (String titel: titels) {
-                        cmbTitel.addItem(titel);
+                    ArrayList<Object> titels = zoekTitelsDbTest(cmbCategorie.getSelectedItem().toString());
+                    ArrayList<Titels> titels1 = zoekTitelsDbTest1(cmbCategorie.getSelectedItem().toString());
+//                    Titels[] titels = leesTitelsDb(cmbCategorie.getSelectedItem().toString());
+//                    Vector model = new Vector();
+//                    Object[] model = new Object[]{titels};
+//                    int i = 0;
+//                    for (Map.Entry titel: titels.entrySet()) {
+//                    for (Titels titel: titels) {
+//                        System.out.println(titel.getKey().toString() + " - " + titel.getValue().toString());
+//                        System.out.println(titel.getId().toString() + " - " + titel.getTitel().toString());
+//                        model.addElement(titel);
+//                    }
+                    for (Titels titel: titels1) {
+                        System.out.println(titel.getId());
                     }
+
+
+                    DefaultComboBoxModel mod = new DefaultComboBoxModel(titels.toArray());
+                    cmbTitel.setModel(mod);
+
+
+//                    cmbTitel.removeAllItems();
+//                    for (Map.Entry titel: titels.entrySet()) {
+//                        System.out.println(titel.getKey().toString() + " - " + titel.getValue().toString());
+//                        cmbTitel.addItem(new Titels(Integer.valueOf(titel.getKey().toString()), titel.getValue().toString()));
+//                    }
                 }
             }
         });
 
         cmbTitel.addActionListener(new ActionListener() {
             @Override
+
             public void actionPerformed(ActionEvent actionEvent) {
                 if (cmbTitel.getSelectedItem() != null) {
-                    titel = cmbTitel.getSelectedItem().toString();
-                    System.out.println(categorie + " - " + titel);
-                    String tekst = db.leesTekst(categorie, titel);
+                    Titels titel = (Titels) cmbTitel.getSelectedItem();
+                    int id = titel.getId();
+                    System.out.println("selected: " + titel.getId());
+                    String tekst = db.leesTekstById(id);
+                    txtTekst.setText(tekst);
+//                    System.out.println(titel.getId() + " - " + titel.getTitel());
+                }
+/*
+                if (cmbTitel.getSelectedItem() != null) {
+                    int i = cmbTitel.getSelectedIndex();
+                    Titels titel1 = (Titels) cmbTitel.getItemAt(i);
+//                    Titels titel1 = (Titels) cmbTitel.getSelectedItem();
+                    System.out.printf("%d - %s\n", titel1.getId(), titel1.getTitel());
+                    String tekst = db.leesTekstById(titel1.getId());
+//                    titel = cmbTitel.getSelectedItem().toString();
+//                    System.out.println(categorie + " - " + titel);
+//                    String tekst = db.leesTekst(categorie, titel);
                     tekst = parseQuery(tekst);
                     txtTekst.setText(tekst);
 
@@ -129,6 +166,7 @@ public class QueryForm {
                     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                     clipboard.setContents( stringSelection, stringSelection);
                 }
+*/
             }
         });
 
@@ -136,6 +174,46 @@ public class QueryForm {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 vulCategorien();
+            }
+        });
+
+        btnZoekTitel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                String sleutel = txtZoekTitel.getText();
+                if (sleutel.length() > 0) {
+                    ArrayList<Object> titels = zoekTitelsDbTest(sleutel);
+                    ArrayList<Titels> titels1 = zoekTitelsDbTest1(sleutel);
+                    Object[] titels2 = zoekTitelsDbTest2(sleutel);
+
+                    System.out.println("Objecten:");
+                    for (Object titel: titels) {
+                        Titels titel1 = (Titels) titel;
+                        System.out.println(titel1.getId() + " - " + titel1.getTitel());
+                    }
+
+//                    System.out.println("Objecten2:");
+//                    for (Object titel: titels2) {
+//                        System.out.println(titel.getId() + " - " + titel.getTitel());
+//                    }
+                    DefaultComboBoxModel mod=new DefaultComboBoxModel(titels2);
+                    cmbTitel.setModel(mod);
+
+                    System.out.println("Titels:");
+                    for (Titels titel: titels1) {
+                        System.out.println(titel.getId() + " - " + titel.getTitel());
+                    }
+
+//                    DefaultComboBoxModel mod=new DefaultComboBoxModel(titels);
+//                    jComboBox1.setModel(mod);
+
+
+//                    ArrayList<String> titels =  zoekTitelsDb(sleutel);
+//                    cmbTitel.removeAllItems();
+//                    for (Titels titel: titels1) {
+//                        cmbTitel.addItem(titel.getTitel());
+//                    }
+                }
             }
         });
     }
@@ -171,13 +249,13 @@ public class QueryForm {
                     query.setTekst(tekst.toString());
                     tekst = new StringBuffer();
                 } else if (leesTitel) {                     // Lees de titel
-                    if (query != null && tekst.length() > 0) {
-                        query.setTekst(tekst.toString());
-                        db.schrijfQuery(query);
-                    }
                     pat = Pattern.compile("^-+\\s*(.*)");
                     mat = pat.matcher(regel);
                     if(mat.find()) {
+                        if (query != null && tekst.length() > 0) {
+                            query.setTekst(tekst.toString());
+                            db.schrijfQuery(query);
+                        }
                         titel = mat.group(1);
                         info.put(titel, categorie);
                         tekst = new StringBuffer();
@@ -218,7 +296,7 @@ public class QueryForm {
     }
 
     /**
-     * Lees de titels bij een categorie
+     * Lees de Titels bij een categorie
      * @param categorie
      * @return
      */
@@ -233,8 +311,24 @@ public class QueryForm {
 
     }
 
-    private ArrayList<String> leesTitelsDb(String categorie) {
+    private Titels[] leesTitelsDb(String categorie) {
         return db.leesTitels(categorie);
+    }
+
+    private ArrayList<String> zoekTitelsDb(String sleutel) {
+        return db.zoekTitels(sleutel);
+    }
+
+    private ArrayList<Object> zoekTitelsDbTest(String sleutel) {
+        return db.zoekTitelsTest(sleutel);
+    }
+
+    private ArrayList<Titels> zoekTitelsDbTest1(String sleutel) {
+        return db.zoekTitelsTest1(sleutel);
+    }
+
+    private Object[] zoekTitelsDbTest2(String sleutel) {
+        return db.zoekTitelsTest2(sleutel);
     }
 
     private void vulCategorien() {
@@ -322,7 +416,13 @@ public class QueryForm {
         JFrame frame = new JFrame("QueryForm");
         frame.setContentPane(new QueryForm().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocation(100,100);
         frame.pack();
         frame.setVisible(true);
     }
+
+    private void createUIComponents() {
+        txtDatum = new JFormattedTextField(new SimpleDateFormat("dd-MM-yyyy"));
+    }
 }
+
