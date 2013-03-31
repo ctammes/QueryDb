@@ -153,7 +153,7 @@ public class QueryFormTest {
             tekst = tekst.replace("@zoekdatum", formatDatum("12-03-2013", 1));
         }
 
-        tekst = tekst.replaceAll("@[A-Z]*datum", formatDatum("12-03-2013", 2));
+        tekst = tekst.replaceAll("(?i)" + "@[A-Z]*datum", formatDatum("12-03-2013", 2));
         System.out.println(tekst);
 
     }

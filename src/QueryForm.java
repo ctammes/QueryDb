@@ -2,6 +2,9 @@ import nl.ctammes.common.MijnIni;
 import nl.ctammes.common.MijnLog;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -60,9 +63,12 @@ public class QueryForm {
 
     private Map<String, String> info = null;
 
+//TODO menu voor bestandsactie
+
     public QueryForm() {
         txtFilenaam.setText(queryFile);
         txtDatum.setText(new SimpleDateFormat("dd-MM-yyyy").format(new Date()).toString());
+        vulCategorien();
 
         btnVerwerk.addActionListener(new ActionListener() {
             @Override
@@ -152,6 +158,14 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 String tekst = txtTekst.getText();
                 txtTekst.setText(parseQuery(tekst));
+            }
+        });
+        btnklembord.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                StringSelection stringSelection = new StringSelection(txtTekst.getText());
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents( stringSelection, stringSelection);
             }
         });
     }
@@ -285,7 +299,7 @@ public class QueryForm {
         }
 
         if (txtDatum.getText().length()>0) {
-            tekst = tekst.replaceAll("@[A-Z]*datum", formatDatum(txtDatum.getText(), 2));
+            tekst = tekst.replaceAll("(?i)" + "@[a-z]*datum", formatDatum(txtDatum.getText(), 2));
         }
 
 
@@ -307,6 +321,18 @@ public class QueryForm {
         }
 
         return result;
+    }
+
+    /**
+     * Stuur querytekst naar het system klembord
+     */
+    private void tekstNaarKlembord() {
+        String tekst = txtTekst.getText();
+        if (tekst.length() > 0) {
+            StringSelection stringSelection = new StringSelection(tekst);
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents( stringSelection, stringSelection);
+        }
     }
 
     /**
