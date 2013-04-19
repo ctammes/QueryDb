@@ -99,6 +99,7 @@ public class QueryForm {
                 fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     txtFilenaam.setText(fc.getSelectedFile().toString());
+                    queryFile = txtFilenaam.getText();
                     if (ini == null) {
                         ini = new MijnIni(inifile);
                         log.info("Inifile " + inifile + " aangemaakt");
