@@ -374,9 +374,18 @@ public class QueryForm {
             System.out.println(e.getMessage());
         }
 
+        // inifile lezen of initieel vullen
         if (new File(inifile).exists()) {
             ini = new MijnIni(inifile);
             queryFile = ini.lees("Algemeen", "queryfile");
+            dbDir = ini.lees("Algemeen", "dbdir");
+            dbNaam = ini.lees("Algemeen", "dbnaam");
+        } else {
+            ini = new MijnIni(inifile);
+            ini.schrijf("Algemeen", "queryfile", queryFile);
+            ini.schrijf("Algemeen", "dbdir", dbDir);
+            ini.schrijf("Algemeen", "dbnaam", dbNaam);
+            log.info("Inifile " + inifile + " aangemaakt en gevuld");
         }
 
         db = new QueryDb(dbDir, dbNaam);
