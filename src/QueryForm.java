@@ -269,7 +269,7 @@ public class QueryForm {
         }
     }
 
-    /**
+    /**                               183:77
      * Vervang de veldnamen door waarden
      * @param tekst
      * @return
@@ -378,8 +378,18 @@ public class QueryForm {
         if (new File(inifile).exists()) {
             ini = new MijnIni(inifile);
             queryFile = ini.lees("Algemeen", "queryfile");
-            dbDir = ini.lees("Algemeen", "dbdir");
-            dbNaam = ini.lees("Algemeen", "dbnaam");
+            String dir = ini.lees("Algemeen", "dbdir");
+            if (dir != null) {
+                dbDir = dir;
+            } else {
+                ini.schrijf("Algemeen", "dbdir", dbDir);
+            }
+            String naam = ini.lees("Algemeen", "dbnaam");
+            if (naam != null) {
+                dbNaam = naam;
+            } else {
+                ini.schrijf("Algemeen", "dbnaam", dbNaam);
+            }
         } else {
             ini = new MijnIni(inifile);
             ini.schrijf("Algemeen", "queryfile", queryFile);
