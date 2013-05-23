@@ -66,9 +66,14 @@ public class QueryForm {
 //TODO menu voor bestandsactie
 
     public QueryForm() {
+
+        // Initialisatie van het scherm
         txtFilenaam.setText(queryFile);
         txtDatum.setText(new SimpleDateFormat("dd-MM-yyyy").format(new Date()).toString());
         vulCategorien();
+        vulTitels(cmbCategorie.getItemAt(0).toString());
+        Titels titel = (Titels) cmbTitel.getItemAt(0);
+        vulTekst(titel);
 
         btnVerwerk.addActionListener(new ActionListener() {
             @Override
@@ -115,11 +120,12 @@ public class QueryForm {
             @Override
             public void itemStateChanged(ItemEvent itemEvent) {
                 if (cmbCategorie.getSelectedItem() != null) {
-                    categorie = cmbCategorie.getSelectedItem().toString();
-                    Object[] titels = leesTitelsDb(categorie);
-                    DefaultComboBoxModel mod=new DefaultComboBoxModel(titels);
-                    cmbTitel.setModel(mod);
+                    vulTitels(cmbCategorie.getSelectedItem().toString());
+                } else {
+                    vulTitels(cmbCategorie.getItemAt(0).toString());
                 }
+                Titels titel = (Titels) cmbTitel.getItemAt(0);
+                vulTekst(titel);
             }
         });
 
@@ -127,12 +133,13 @@ public class QueryForm {
             @Override
 
             public void actionPerformed(ActionEvent actionEvent) {
+                Titels titel = null;
                 if (cmbTitel.getSelectedItem() != null) {
-                    Titels titel = (Titels) cmbTitel.getSelectedItem();
-                    queryId = titel.getId();
-                    String tekst = db.leesTekstById(queryId);
-                    txtTekst.setText(parseQuery(tekst));
+                    titel = (Titels) cmbTitel.getSelectedItem();
+                } else {
+                    titel = (Titels) cmbTitel.getItemAt(0);
                 }
+                vulTekst(titel);
             }
         });
 
@@ -269,6 +276,28 @@ public class QueryForm {
         }
     }
 
+    /**
+     * Vul de titels combobox ahv. de categorie
+     * @param categorie
+     */
+    private void vulTitels(String categorie) {
+        Object[] titels = leesTitelsDb(categorie);
+        DefaultComboBoxModel mod=new DefaultComboBoxModel(titels);
+        cmbTitel.setModel(mod);
+
+    }
+
+    /**
+     * Vul de querytekst ahv. geselecteerde titel
+     * @param titel
+     */
+    private void vulTekst(Titels titel) {
+        queryId = titel.getId();
+        String tekst = db.leesTekstById(queryId);
+        txtTekst.setText(parseQuery(tekst));
+
+    }
+
     /**                               183:77
      * Vervang de veldnamen door waarden
      * @param tekst
@@ -382,7 +411,9 @@ public class QueryForm {
             if (dir != null) {
                 dbDir = dir;
             } else {
-                ini.schrijf("Algemeen", "dbdir", dbDir);
+                if (new File(dbDir).exists()) {
+                    ini.schrijf("Algemeen", "dbdir", dbDir);
+                }
             }
             String naam = ini.lees("Algemeen", "dbnaam");
             if (naam != null) {
