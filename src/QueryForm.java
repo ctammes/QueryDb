@@ -46,6 +46,7 @@ public class QueryForm {
     private JButton btnZoekTitel;
     private JButton btnVervers;
     private JButton btnklembord;
+    private JButton btnOnderhoud;
 
     private static MijnIni ini = null;
     private static String inifile = "QueryDb.ini";
@@ -174,6 +175,18 @@ public class QueryForm {
                 StringSelection stringSelection = new StringSelection(txtTekst.getText());
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents( stringSelection, stringSelection);
+            }
+        });
+        btnOnderhoud.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JFrame frame = new JFrame("OnderhoudsForm");
+                frame.setContentPane(new OnderhoudsForm().mainPanel);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setLocation(100,100);
+                frame.pack();
+                frame.setVisible(true);
+
             }
         });
     }
