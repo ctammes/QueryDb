@@ -19,6 +19,11 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// TODO ondexhoud database
+// TODO afhandelen nieuwe variabelen
+// TODO 'set' in query onderdrukken
+// TODO na Verversen ook naar klembord
+
 /**
  * Created with IntelliJ IDEA.
  * User: chris
@@ -27,13 +32,14 @@ import java.util.regex.Pattern;
  * To change this template use File | Settings | File Templates.
  */
 public class QueryForm {
+    JTextArea txtTekst;
+    JComboBox cmbCategorie;
+    JComboBox cmbTitel;
+
     private JTextField txtFilenaam;
     private JButton btnVerwerk;
     private JPanel mainPanel;
-    private JTextArea txtTekst;
     private JButton btnFileChooser;
-    private JComboBox cmbCategorie;
-    private JComboBox cmbTitel;
     private JButton btnLeesDb;
     private JTextField txtApotheekId;
     private JTextField txtApotheekAgb;
@@ -72,9 +78,9 @@ public class QueryForm {
         txtFilenaam.setText(queryFile);
         txtDatum.setText(new SimpleDateFormat("dd-MM-yyyy").format(new Date()).toString());
         vulCategorien();
-        vulTitels(cmbCategorie.getItemAt(0).toString());
+        vulTitels(cmbCategorie.getItemAt(0).toString(), cmbTitel);
         Titels titel = (Titels) cmbTitel.getItemAt(0);
-        vulTekst(titel);
+        vulTekst(titel, txtTekst);
 
         btnVerwerk.addActionListener(new ActionListener() {
             @Override
@@ -121,18 +127,17 @@ public class QueryForm {
             @Override
             public void itemStateChanged(ItemEvent itemEvent) {
                 if (cmbCategorie.getSelectedItem() != null) {
-                    vulTitels(cmbCategorie.getSelectedItem().toString());
+                    vulTitels(cmbCategorie.getSelectedItem().toString(), cmbTitel);
                 } else {
-                    vulTitels(cmbCategorie.getItemAt(0).toString());
+                    vulTitels(cmbCategorie.getItemAt(0).toString(), cmbTitel);
                 }
                 Titels titel = (Titels) cmbTitel.getItemAt(0);
-                vulTekst(titel);
+                vulTekst(titel, txtTekst);
             }
         });
 
         cmbTitel.addActionListener(new ActionListener() {
             @Override
-
             public void actionPerformed(ActionEvent actionEvent) {
                 Titels titel = null;
                 if (cmbTitel.getSelectedItem() != null) {
@@ -140,7 +145,7 @@ public class QueryForm {
                 } else {
                     titel = (Titels) cmbTitel.getItemAt(0);
                 }
-                vulTekst(titel);
+                vulTekst(titel, txtTekst);
             }
         });
 
@@ -182,8 +187,8 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 JFrame frame = new JFrame("OnderhoudsForm");
                 frame.setContentPane(new OnderhoudsForm().mainPanel);
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setLocation(100,100);
+                frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+                frame.setLocation(100, 100);
                 frame.pack();
                 frame.setVisible(true);
 
@@ -293,10 +298,11 @@ public class QueryForm {
      * Vul de titels combobox ahv. de categorie
      * @param categorie
      */
-    private void vulTitels(String categorie) {
+    protected void vulTitels(String categorie, JComboBox combo) {
         Object[] titels = leesTitelsDb(categorie);
         DefaultComboBoxModel mod=new DefaultComboBoxModel(titels);
-        cmbTitel.setModel(mod);
+//        cmbTitel.setModel(mod);
+        combo.setModel(mod);
 
     }
 
@@ -304,11 +310,11 @@ public class QueryForm {
      * Vul de querytekst ahv. geselecteerde titel
      * @param titel
      */
-    private void vulTekst(Titels titel) {
+    protected void vulTekst(Titels titel, JTextArea text) {
         queryId = titel.getId();
         String tekst = db.leesTekstById(queryId);
-        txtTekst.setText(parseQuery(tekst));
-
+//        txtTekst.setText(parseQuery(tekst));
+        text.setText(parseQuery(tekst));
     }
 
     /**                               183:77
