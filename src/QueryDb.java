@@ -187,6 +187,35 @@ public class QueryDb extends Sqlite {
 
     }
 
+    /**
+     * Wijzig de tekst van een query
+     * @param titel
+     * @return
+     */
+    public boolean wijzigQueryTekst(Titels titel) {
+
+        String tekst = titel.getTitel().replaceAll("'", "''");
+        String sql = "update query" +
+                " set tekst = '" + tekst + "'" +
+                " where id = " + titel.getId();
+        executeNoResult(sql);
+        return false;
+
+    }
+
+    /**
+     * Verwijder een query
+     * @param titel
+     * @return
+     */
+    public boolean verwijderQueryTekst(Titels titel) {
+
+        String sql = "delete query" +
+                " where id = " + titel.getId();
+        executeNoResult(sql);
+        return false;
+
+    }
 
 
 }

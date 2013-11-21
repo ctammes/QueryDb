@@ -7,8 +7,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -36,6 +34,8 @@ public class QueryForm {
     JComboBox cmbCategorie;
     JComboBox cmbTitel;
 
+    JFrame onderhoudsFrame;
+
     private JTextField txtFilenaam;
     private JButton btnVerwerk;
     private JPanel mainPanel;
@@ -62,7 +62,11 @@ public class QueryForm {
     private static String dbNaam = "QueryDb.db";
 
     private static QueryDb db = null;
-    private String categorie;
+
+    private OnderhoudsForm onderhoudsform = null;
+
+    private String selectedCategorie;
+    private Titels selectedTitel;
     private Integer queryId;
 
     // initialiseer logger
@@ -78,8 +82,10 @@ public class QueryForm {
         txtFilenaam.setText(queryFile);
         txtDatum.setText(new SimpleDateFormat("dd-MM-yyyy").format(new Date()).toString());
         vulCategorien();
-        vulTitels(cmbCategorie.getItemAt(0).toString(), cmbTitel);
-        Titels titel = (Titels) cmbTitel.getItemAt(0);
+        selectedCategorie = cmbCategorie.getItemAt(0).toString();
+        vulTitels(selectedCategorie, cmbTitel);
+        selectedTitel = (Titels) cmbTitel.getItemAt(0);
+        Titels titel = selectedTitel;
         vulTekst(titel, txtTekst);
 
         btnVerwerk.addActionListener(new ActionListener() {
@@ -123,15 +129,19 @@ public class QueryForm {
             }
         });
 
-        cmbCategorie.addItemListener(new ItemListener() {
+        cmbCategorie.addActionListener(new ActionListener() {
             @Override
-            public void itemStateChanged(ItemEvent itemEvent) {
+            public void actionPerformed(ActionEvent actionEvent) {
+                String categorie = null;
                 if (cmbCategorie.getSelectedItem() != null) {
-                    vulTitels(cmbCategorie.getSelectedItem().toString(), cmbTitel);
+                    categorie = cmbCategorie.getSelectedItem().toString();
                 } else {
-                    vulTitels(cmbCategorie.getItemAt(0).toString(), cmbTitel);
+                    categorie = cmbCategorie.getItemAt(0).toString();
                 }
+                selectedCategorie = categorie;
+                vulTitels(categorie, cmbTitel);
                 Titels titel = (Titels) cmbTitel.getItemAt(0);
+                selectedTitel = titel;
                 vulTekst(titel, txtTekst);
             }
         });
@@ -145,6 +155,7 @@ public class QueryForm {
                 } else {
                     titel = (Titels) cmbTitel.getItemAt(0);
                 }
+                selectedTitel = titel;
                 vulTekst(titel, txtTekst);
             }
         });
@@ -185,12 +196,22 @@ public class QueryForm {
         btnOnderhoud.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                JFrame frame = new JFrame("OnderhoudsForm");
-                frame.setContentPane(new OnderhoudsForm().mainPanel);
-                frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-                frame.setLocation(100, 100);
-                frame.pack();
-                frame.setVisible(true);
+                if (onderhoudsFrame == null){                   // initialisatie
+                    onderhoudsFrame = new JFrame("OnderhoudsForm");
+                    onderhoudsform = new OnderhoudsForm(selectedCategorie, selectedTitel, txtTekst.getText());
+                    onderhoudsFrame.setContentPane(onderhoudsform.mainPanel);
+                    onderhoudsFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+                    onderhoudsFrame.setLocation(100, 100);
+                    onderhoudsFrame.pack();
+                    onderhoudsFrame.setVisible(true);
+                } else if (!onderhoudsFrame.isShowing()) {      // hidden
+                    onderhoudsform.stelVeldenIn(selectedCategorie, selectedTitel, txtTekst.getText());
+                    onderhoudsFrame.setVisible(true);
+                } else {                                        // heeft geen focus
+                    onderhoudsform.stelVeldenIn(selectedCategorie, selectedTitel, txtTekst.getText());
+                    onderhoudsFrame.toFront();
+                }
+
 
             }
         });
@@ -409,6 +430,22 @@ public class QueryForm {
 
     }
 
+    /**
+     * Geef de tekst in de categorie combobox
+     * @return
+     */
+    protected String getCategorie() {
+        return selectedCategorie;
+    }
+
+
+    /**
+     * Geef de tekst in de titel combobox
+     * @return
+     */
+    protected Titels getTitel() {
+        return selectedTitel;
+    }
 
     public static void main(String[] args) {
         String logDir = ".";
