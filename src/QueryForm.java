@@ -30,11 +30,11 @@ import java.util.regex.Pattern;
  * To change this template use File | Settings | File Templates.
  */
 public class QueryForm {
-    JTextArea txtTekst;
-    JComboBox cmbCategorie;
-    JComboBox cmbTitel;
+    private JTextArea txtTekst;
+    private JComboBox cmbCategorie;
+    private JComboBox cmbTitel;
 
-    JFrame onderhoudsFrame;
+    private JFrame onderhoudsFrame;
 
     private JTextField txtFilenaam;
     private JButton btnVerwerk;
@@ -81,7 +81,7 @@ public class QueryForm {
         // Initialisatie van het scherm
         txtFilenaam.setText(queryFile);
         txtDatum.setText(new SimpleDateFormat("dd-MM-yyyy").format(new Date()).toString());
-        vulCategorien();
+        vulCategorien(cmbCategorie);
         selectedCategorie = cmbCategorie.getItemAt(0).toString();
         vulTitels(selectedCategorie, cmbTitel);
         selectedTitel = (Titels) cmbTitel.getItemAt(0);
@@ -101,7 +101,7 @@ public class QueryForm {
                         JOptionPane.showMessageDialog(null, tekst, "Info", JOptionPane.INFORMATION_MESSAGE);
                         log.info(tekst);
                     } else {
-                        vulCategorien();
+                        vulCategorien(cmbCategorie);
                     }
                 }
             }
@@ -163,7 +163,7 @@ public class QueryForm {
         btnLeesDb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                vulCategorien();
+                vulCategorien(cmbCategorie);
             }
         });
 
@@ -294,7 +294,7 @@ public class QueryForm {
      * @param categorie
      * @return
      */
-    private Object[] leesTitelsDb(String categorie) {
+    private ArrayList<Object> leesTitelsDb(String categorie) {
         return db.leesTitels(categorie);
     }
 
@@ -307,22 +307,24 @@ public class QueryForm {
         return db.zoekTitels(sleutel);
     }
 
-    private void vulCategorien() {
+    protected void vulCategorien(JComboBox combo) {
         ArrayList<String> categorien = leesCategorienDb();
-        cmbCategorie.removeAll();
+        combo.removeAll();
         for (String categorie: categorien) {
-            cmbCategorie.addItem(categorie);
+            if (categorie.trim() != "" ) {
+                combo.addItem(categorie);
+            }
         }
     }
 
     /**
      * Vul de titels combobox ahv. de categorie
      * @param categorie
+     * @param combo
      */
     protected void vulTitels(String categorie, JComboBox combo) {
-        Object[] titels = leesTitelsDb(categorie);
-        DefaultComboBoxModel mod=new DefaultComboBoxModel(titels);
-//        cmbTitel.setModel(mod);
+        ArrayList<Object> titels = leesTitelsDb(categorie);
+        DefaultComboBoxModel mod=new DefaultComboBoxModel(titels.toArray());
         combo.setModel(mod);
 
     }
@@ -330,6 +332,7 @@ public class QueryForm {
     /**
      * Vul de querytekst ahv. geselecteerde titel
      * @param titel
+     * @param text
      */
     protected void vulTekst(Titels titel, JTextArea text) {
         queryId = titel.getId();

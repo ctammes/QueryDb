@@ -17,6 +17,9 @@ public class Titels {
         return titel;
     }
 
+    public Titels() {
+    }
+
     public Titels(Integer id, String titel) {
         this.id = id;
         this.titel = titel;

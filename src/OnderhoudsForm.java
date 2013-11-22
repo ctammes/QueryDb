@@ -21,11 +21,13 @@ public class OnderhoudsForm {
 
     QueryForm form = new QueryForm();
 
+    // Dit zijn de (nieuwe) waarden die opgeslagen moeten worden
+    private int newId = 0;
+    private String newCategorie = null;
+    private String newTitel = null;
+
     public OnderhoudsForm(String categorie, Titels titel, String tekst) {
-        cmbCategorie.removeAll();
-        for (int i=0; i<form.cmbCategorie.getItemCount(); i++) {
-            cmbCategorie.addItem(form.cmbCategorie.getItemAt(i));
-        }
+        parent.vulCategorien(cmbCategorie);
 
         // Vul de velden
         stelVeldenIn(categorie, titel, tekst);
@@ -33,32 +35,54 @@ public class OnderhoudsForm {
         cmbCategorie.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if (cmbCategorie.getSelectedItem() != null) {
-                    form.vulTitels(cmbCategorie.getSelectedItem().toString(), cmbTitel);
+                if (cmbTitel.getSelectedIndex() == -1) {
+                    newCategorie = cmbCategorie.getSelectedItem().toString();
                 } else {
-                    form.vulTitels(cmbCategorie.getItemAt(0).toString(), cmbTitel);
+                    String categorie = null;
+                    if (cmbCategorie.getSelectedItem() != null) {
+                        categorie = cmbCategorie.getSelectedItem().toString();
+                    } else {
+                        categorie = cmbCategorie.getItemAt(0).toString();
+                    }
+                    newCategorie = categorie;
+                    form.vulTitels(categorie, cmbTitel);
+                    Titels titel = (Titels) cmbTitel.getItemAt(0);
+                    newTitel = titel.getTitel();
+                    newId = titel.getId();
+                    form.vulTekst(titel, txtQuery);
                 }
-                Titels titel = (Titels) cmbTitel.getItemAt(0);
-                form.vulTekst(titel, txtQuery);
             }
         });
         cmbTitel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                Titels titel = null;
-                if (cmbTitel.getSelectedItem() != null) {
-                    titel = (Titels) cmbTitel.getSelectedItem();
+                if (cmbTitel.getSelectedIndex() == -1) {
+                    newTitel = cmbTitel.getSelectedItem().toString();
                 } else {
-                    titel = (Titels) cmbTitel.getItemAt(0);
+                    Titels titel = null;
+                    if (cmbTitel.getSelectedItem() != null) {
+                        titel = (Titels) cmbTitel.getSelectedItem();
+                    } else {
+                        titel = (Titels) cmbTitel.getItemAt(0);
+                    }
+                    newTitel = titel.getTitel();
+                    newId = titel.getId();
+                    form.vulTekst(titel, txtQuery);
                 }
-                form.vulTekst(titel, txtQuery);
             }
         });
         btnOpslaan.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                Titels titel = (Titels) cmbTitel.getSelectedItem();
-                String msg = "Gegevens worden opgeslagen onder id " + titel.getId() + ". Doorgaan ?";
+                Titels titel = null;
+                String msg = null;
+                if (newId == -1) {
+                    titel = new Titels(newId, newTitel);
+                    msg = "<html>Er wordt een nieuwe query gemaakt: <br>" + newCategorie + "<br>" + newTitel + ".<br> Doorgaan ?<html>";
+                } else {
+                    titel = (Titels) cmbTitel.getSelectedItem();
+                    msg = "Gegevens worden opgeslagen onder id " + titel.getId() + ". Doorgaan ?";
+                }
                 if (JOptionPane.showConfirmDialog(null, msg, "Bevestig keuze", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     JOptionPane.showMessageDialog(null, "Gewijzigde tekst wordt opgeslagen", "info", JOptionPane.INFORMATION_MESSAGE);
                     form.log.info("Query wijzigen: " + titel.getId() + " - " + titel.getTitel());
@@ -87,6 +111,7 @@ public class OnderhoudsForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 JOptionPane.showMessageDialog(null, "Nieuwe query toevoegen", "info", JOptionPane.INFORMATION_MESSAGE);
                 txtQuery.setText("");
+                newId = -1;
             }
         });
     }

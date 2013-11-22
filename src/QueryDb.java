@@ -110,14 +110,14 @@ public class QueryDb extends Sqlite {
         return new ArrayList<String>(result);
     }
 
-    public Object[] leesTitels(String categorie) {
-        Object[] items = new Titels[50];
+    public ArrayList<Object> leesTitels(String categorie) {
+        ArrayList<Object> items = new ArrayList<Object>();
         String sql = "select id, titel from query where categorie='" + categorie.replaceAll("'", "''") + "'";
         ResultSet rst = execute(sql);
         try {
             int i = 0;
             while (rst.next()) {
-                items[i++] = (new Titels(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
+                items.add(new Titels(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
             }
         } catch(Exception e) {
             System.out.println(e.getMessage());
