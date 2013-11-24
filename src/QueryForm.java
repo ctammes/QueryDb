@@ -83,7 +83,10 @@ public class QueryForm {
 
         // Initialisatie van het scherm
         txtFilenaam.setText(queryFile);
+
         txtDatum.setText(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()).toString());
+        doAction("txtdatum");
+
         util.vulCategorien(cmbCategorie);
         selectedCategorie = cmbCategorie.getItemAt(0).toString();
         util.vulTitels(selectedCategorie, cmbTitel);
@@ -251,12 +254,18 @@ public class QueryForm {
         txtDatum.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                util.setVariabele("zoekdatum", formatDatum(txtDatum.getText(), 1));
-                util.setVariabele("datum", formatDatum(txtDatum.getText(), 2));
-                util.setVariabele("timestamp", formatDatum(txtDatum.getText(), 3));
+                doAction("txtdatum");
             }
         });
 
+    }
+
+    private void doAction(String naam) {
+        if (naam == "txtdatum") {
+            util.setVariabele("zoekdatum", util.formatDatum(txtDatum.getText(), 1));
+            util.setVariabele("datum", util.formatDatum(txtDatum.getText(), 2));
+            util.setVariabele("timestamp", util.formatDatum(txtDatum.getText(), 3));
+        }
 
     }
 
@@ -331,30 +340,6 @@ public class QueryForm {
      */
     private Object[] zoekTitelsDb(String sleutel) {
         return util.getDb().zoekTitels(sleutel);
-    }
-
-    /**                               183:77
-     * Vervang de veldnamen door waarden
-     * @param tekst
-     * @return
-     */
-    /**
-     * Formatteer de datum afhankelijk van het veld
-     * @param datum dd-mm-jjjj
-     * @param format 1=zoekdatum 2=omgekeerd 3=timestamp
-     * @return
-     */
-    private String formatDatum(String datum, int format) {
-        String result = "";
-        if (format == 1) {
-            result = datum.substring(6, 10) + datum.substring(3, 5) + datum.substring(0, 2);
-        } else if (format == 2) {
-            result = datum.substring(6, 10) + "-" + datum.substring(3, 5) + "-" +  datum.substring(0, 2);
-        } else if (format == 3) {
-            result = datum.substring(6, 10) + "-" + datum.substring(3, 5) + "-" +  datum.substring(0, 2) + " " + datum.substring(11, 13) + ":" + datum.substring(14, 16) + ":" +  datum.substring(17, 19);
-        }
-
-        return result;
     }
 
     /**
@@ -458,10 +443,28 @@ public class QueryForm {
         frame.setLocation(100,100);
         frame.pack();
         frame.setVisible(true);
+
     }
 
     private void createUIComponents() {
         txtDatum = new JFormattedTextField(new SimpleDateFormat("dd-MM-yyyy"));
     }
+
+    // Test om de JTextFields in een enkele functie van een listerner te voorzien
+    // Lukt zo in ieder geval niet
+    // getName() geeft nooit de juiste naam
+    private void test(Container con) {
+        for (Component com : con.getComponents()) {
+            if (com instanceof JTextField) {
+                System.out.println("textveld: " + ((JTextField) com).getName());    // + com.toString());
+            } else {
+                test((Container) com);
+            }
+        }
+
+    }
+
+
+
 }
 

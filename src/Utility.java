@@ -14,10 +14,12 @@ public class Utility {
     private QueryDb db;
 
     // Variabelen in de query (@...)
+    // key   = naam (zonder @)
+    // value = waarde
     private HashMap<String, String> variabelen = new HashMap<String, String>();
 
     // Initialiseer logger
-    public Logger log = Logger.getLogger(QueryForm.class.getName());
+    private Logger log = Logger.getLogger(QueryForm.class.getName());
 
     /**
      * Vul queryvariabele
@@ -117,17 +119,36 @@ public class Utility {
      * @return
      */
     protected String parseQuery(String tekst) {
+        tekst = tekst.replaceAll("(?i)" + "^set @[^;]+;", "");
         if (! variabelen.isEmpty()) {
             Set<String> namen = variabelen.keySet();
             for (String naam: namen) {
                 if (tekst.contains("@" + naam) && variabelen.containsKey(naam)) {
                     tekst = tekst.replace("@" + naam, variabelen.get(naam).toString());
-//                tekst = tekst.replaceAll("(?i)" + "@[a-z]*datum", formatDatum(txtDatum.getText(), 2));
                 }
             }
         }
 
         return tekst;
+    }
+
+    /**
+     * Formatteer de datum afhankelijk van het veld
+     * @param datum dd-mm-jjjj
+     * @param format 1=zoekdatum 2=omgekeerd 3=timestamp
+     * @return
+     */
+    protected String formatDatum(String datum, int format) {
+        String result = "";
+        if (format == 1) {
+            result = datum.substring(6, 10) + datum.substring(3, 5) + datum.substring(0, 2);
+        } else if (format == 2) {
+            result = datum.substring(6, 10) + "-" + datum.substring(3, 5) + "-" +  datum.substring(0, 2);
+        } else if (format == 3) {
+            result = datum.substring(6, 10) + "-" + datum.substring(3, 5) + "-" +  datum.substring(0, 2) + " " + datum.substring(11, 13) + ":" + datum.substring(14, 16) + ":" +  datum.substring(17, 19);
+        }
+
+        return result;
     }
 
 

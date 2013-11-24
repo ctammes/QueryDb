@@ -20,6 +20,7 @@ public class OnderhoudsForm {
     private JButton btnNieuw;
     private JButton btnVerwijderen;
 
+    // Utility functies enzo
     Utility util = null;
 
     // Dit zijn de (nieuwe) waarden die opgeslagen moeten worden
@@ -126,12 +127,12 @@ public class OnderhoudsForm {
     }
 
     /**
-     * Vul velden (bij aanroep vanuit hoofdscherm)
+     * Vul velden (bij instantiation vanuit hoofdscherm)
      * @param categorie
      * @param titel
      * @param tekst
      */
-    public void stelVeldenIn(String categorie, Titel titel, String tekst) {
+    protected void stelVeldenIn(String categorie, Titel titel, String tekst) {
         cmbCategorie.setSelectedItem(categorie);
         util.vulTitels(categorie, cmbTitel);
         // let op: getModel() ertussen, anders werkt het niet!
