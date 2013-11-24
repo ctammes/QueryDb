@@ -5,7 +5,7 @@
  * Time: 15:15
  * To change this template use File | Settings | File Templates.
  */
-public class Titels {
+public class Titel {
     private Integer id;
     private String titel;
 
@@ -17,10 +17,10 @@ public class Titels {
         return titel;
     }
 
-    public Titels() {
+    public Titel() {
     }
 
-    public Titels(Integer id, String titel) {
+    public Titel(Integer id, String titel) {
         this.id = id;
         this.titel = titel;
     }

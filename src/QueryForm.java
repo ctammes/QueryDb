@@ -13,13 +13,12 @@ import java.io.FileReader;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 // TODO ondexhoud database
 // TODO afhandelen nieuwe variabelen
-// TODO 'set' in query onderdrukken
+// TODO 'set'-regel in query onderdrukken
 // TODO na Verversen ook naar klembord
 
 /**
@@ -44,9 +43,9 @@ public class QueryForm {
     private JTextField txtApotheekId;
     private JTextField txtApotheekAgb;
     private JTextField txtApotheekNaam;
-    private JTextField txtKlantId;
-    private JTextField txtKlantKlant_id;
-    private JTextField txtKlantAis_id;
+    private JTextField txtKlantenId;
+    private JTextField txtKlant_id;
+    private JTextField txtAis_id;
     private JFormattedTextField txtDatum;
     private JTextField txtZoekTitel;
     private JButton btnZoekTitel;
@@ -61,16 +60,20 @@ public class QueryForm {
     private static String dbDir = "/home/chris/IdeaProjects/java/QueryDb";
     private static String dbNaam = "QueryDb.db";
 
-    private static QueryDb db = null;
+//    protected static QueryDb db = null;
+    protected static Utility util = null;
 
     private OnderhoudsForm onderhoudsform = null;
 
     private String selectedCategorie;
-    private Titels selectedTitel;
+    private Titel selectedTitel;
     private Integer queryId;
 
+    // te vervangen variabelen
+//    private HashMap<String, String> variabelen = null;
+
     // initialiseer logger
-    public static Logger log = Logger.getLogger(QueryForm.class.getName());
+//    public static Logger log = Logger.getLogger(QueryForm.class.getName());
 
     private Map<String, String> info = null;
 
@@ -80,28 +83,28 @@ public class QueryForm {
 
         // Initialisatie van het scherm
         txtFilenaam.setText(queryFile);
-        txtDatum.setText(new SimpleDateFormat("dd-MM-yyyy").format(new Date()).toString());
-        vulCategorien(cmbCategorie);
+        txtDatum.setText(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()).toString());
+        util.vulCategorien(cmbCategorie);
         selectedCategorie = cmbCategorie.getItemAt(0).toString();
-        vulTitels(selectedCategorie, cmbTitel);
-        selectedTitel = (Titels) cmbTitel.getItemAt(0);
-        Titels titel = selectedTitel;
-        vulTekst(titel, txtTekst);
+        util.vulTitels(selectedCategorie, cmbTitel);
+        selectedTitel = (Titel) cmbTitel.getItemAt(0);
+        Titel titel = selectedTitel;
+        util.vulTekst(titel, txtTekst);
 
         btnVerwerk.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if (JOptionPane.showConfirmDialog(null, "Database wordt leeggemaakt. Doorgaan?", "Bevestig", JOptionPane.YES_NO_CANCEL_OPTION) == JOptionPane.YES_OPTION) {
                     btnVerwerk.setEnabled(false);
-                    db.truncateQuery();
+                    util.getDb().truncateQuery();
                     leesFile();
                     btnVerwerk.setEnabled(true);
                     if (info.size() == 0) {
                         String tekst = "Geen informatie gevonden in " + queryFile;
                         JOptionPane.showMessageDialog(null, tekst, "Info", JOptionPane.INFORMATION_MESSAGE);
-                        log.info(tekst);
+                        util.getLog().info(tekst);
                     } else {
-                        vulCategorien(cmbCategorie);
+                        util.vulCategorien(cmbCategorie);
                     }
                 }
             }
@@ -120,11 +123,11 @@ public class QueryForm {
                     queryFile = txtFilenaam.getText();
                     if (ini == null) {
                         ini = new MijnIni(inifile);
-                        log.info("Inifile " + inifile + " aangemaakt");
+                        util.getLog().info("Inifile " + inifile + " aangemaakt");
                     }
                     ini.schrijf("Algemeen", "queryfile", txtFilenaam.getText());
                 } else {
-                    log.info("No Selection ");
+                    util.getLog().info("No Selection ");
                 }
             }
         });
@@ -139,31 +142,31 @@ public class QueryForm {
                     categorie = cmbCategorie.getItemAt(0).toString();
                 }
                 selectedCategorie = categorie;
-                vulTitels(categorie, cmbTitel);
-                Titels titel = (Titels) cmbTitel.getItemAt(0);
+                util.vulTitels(categorie, cmbTitel);
+                Titel titel = (Titel) cmbTitel.getItemAt(0);
                 selectedTitel = titel;
-                vulTekst(titel, txtTekst);
+                util.vulTekst(titel, txtTekst);
             }
         });
 
         cmbTitel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                Titels titel = null;
+                Titel titel = null;
                 if (cmbTitel.getSelectedItem() != null) {
-                    titel = (Titels) cmbTitel.getSelectedItem();
+                    titel = (Titel) cmbTitel.getSelectedItem();
                 } else {
-                    titel = (Titels) cmbTitel.getItemAt(0);
+                    titel = (Titel) cmbTitel.getItemAt(0);
                 }
                 selectedTitel = titel;
-                vulTekst(titel, txtTekst);
+                util.vulTekst(titel, txtTekst);
             }
         });
 
         btnLeesDb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                vulCategorien(cmbCategorie);
+                util.vulCategorien(cmbCategorie);
             }
         });
 
@@ -182,7 +185,7 @@ public class QueryForm {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 String tekst = txtTekst.getText();
-                txtTekst.setText(parseQuery(tekst));
+                txtTekst.setText(util.parseQuery(tekst));
             }
         });
         btnklembord.addActionListener(new ActionListener() {
@@ -190,7 +193,7 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 StringSelection stringSelection = new StringSelection(txtTekst.getText());
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                clipboard.setContents( stringSelection, stringSelection);
+                clipboard.setContents(stringSelection, stringSelection);
             }
         });
         btnOnderhoud.addActionListener(new ActionListener() {
@@ -198,7 +201,7 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (onderhoudsFrame == null){                   // initialisatie
                     onderhoudsFrame = new JFrame("OnderhoudsForm");
-                    onderhoudsform = new OnderhoudsForm(selectedCategorie, selectedTitel, txtTekst.getText());
+                    onderhoudsform = new OnderhoudsForm(selectedCategorie, selectedTitel, txtTekst.getText(), util);
                     onderhoudsFrame.setContentPane(onderhoudsform.mainPanel);
                     onderhoudsFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
                     onderhoudsFrame.setLocation(100, 100);
@@ -215,6 +218,46 @@ public class QueryForm {
 
             }
         });
+        txtApotheekId.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                util.setVariabele("apotheek_id", txtApotheekId.getText());
+            }
+        });
+        txtApotheekNaam.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                util.setVariabele("apotheek_naam", txtApotheekNaam.getText());
+            }
+        });
+        txtApotheekAgb.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                util.setVariabele("apotheek_agb", txtApotheekAgb.getText());
+            }
+        });
+        txtKlantenId.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                util.setVariabele("klantenid", txtKlantenId.getText());
+            }
+        });
+        txtKlant_id.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                util.setVariabele("klant_id", txtKlant_id.getText());
+            }
+        });
+        txtDatum.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                util.setVariabele("zoekdatum", formatDatum(txtDatum.getText(), 1));
+                util.setVariabele("datum", formatDatum(txtDatum.getText(), 2));
+                util.setVariabele("timestamp", formatDatum(txtDatum.getText(), 3));
+            }
+        });
+
+
     }
 
     /**
@@ -241,7 +284,7 @@ public class QueryForm {
                 if(mat.find()) {
                     if (query != null && tekst != null && tekst.length() > 0) {
                         query.setTekst(tekst.toString());
-                        db.schrijfQuery(query);
+                        util.getDb().schrijfQuery(query);
                     }
                     categorie = mat.group(1);
                     query = new Query(categorie);
@@ -253,7 +296,7 @@ public class QueryForm {
                     if(mat.find()) {
                         if (query != null && tekst.length() > 0) {
                             query.setTekst(tekst.toString());
-                            db.schrijfQuery(query);
+                            util.getDb().schrijfQuery(query);
                         }
                         titel = mat.group(1);
                         info.put(titel, categorie);
@@ -276,26 +319,9 @@ public class QueryForm {
 
 
         } catch (Exception e) {
-            log.severe(e.getMessage());
+            util.getLog().severe(e.getMessage());
         }
 
-    }
-
-    /**
-     * Lees de categorien uit de database
-     * @return
-     */
-    private ArrayList<String> leesCategorienDb() {
-        return db.leesCategorien();
-    }
-
-    /**
-     * Lees titels uit de database ahv. categorie
-     * @param categorie
-     * @return
-     */
-    private ArrayList<Object> leesTitelsDb(String categorie) {
-        return db.leesTitels(categorie);
     }
 
     /**
@@ -304,41 +330,7 @@ public class QueryForm {
      * @return
      */
     private Object[] zoekTitelsDb(String sleutel) {
-        return db.zoekTitels(sleutel);
-    }
-
-    protected void vulCategorien(JComboBox combo) {
-        ArrayList<String> categorien = leesCategorienDb();
-        combo.removeAll();
-        for (String categorie: categorien) {
-            if (categorie.trim() != "" ) {
-                combo.addItem(categorie);
-            }
-        }
-    }
-
-    /**
-     * Vul de titels combobox ahv. de categorie
-     * @param categorie
-     * @param combo
-     */
-    protected void vulTitels(String categorie, JComboBox combo) {
-        ArrayList<Object> titels = leesTitelsDb(categorie);
-        DefaultComboBoxModel mod=new DefaultComboBoxModel(titels.toArray());
-        combo.setModel(mod);
-
-    }
-
-    /**
-     * Vul de querytekst ahv. geselecteerde titel
-     * @param titel
-     * @param text
-     */
-    protected void vulTekst(Titels titel, JTextArea text) {
-        queryId = titel.getId();
-        String tekst = db.leesTekstById(queryId);
-//        txtTekst.setText(parseQuery(tekst));
-        text.setText(parseQuery(tekst));
+        return util.getDb().zoekTitels(sleutel);
     }
 
     /**                               183:77
@@ -346,43 +338,10 @@ public class QueryForm {
      * @param tekst
      * @return
      */
-    private String parseQuery(String tekst) {
-        if (tekst.contains("@apotheek_id")) {
-            tekst = tekst.replace("@apotheek_id", txtApotheekId.getText());
-        }
-        if (tekst.contains("@agb_code")) {
-            tekst = tekst.replace("@agb_code", txtApotheekAgb.getText());
-        }
-        if (tekst.contains("@apotheeknaam")) {
-            tekst = tekst.replace("@apotheeknaam", txtApotheekNaam.getText());
-        }
-
-        if (tekst.contains("@klantenid")) {
-            tekst = tekst.replace("@klantenid", txtKlantId.getText());
-        }
-        if (tekst.contains("@klant_id")) {
-            tekst = tekst.replace("@klant_id", txtKlantKlant_id.getText());
-        }
-        if (tekst.contains("@ais_id")) {
-            tekst = tekst.replace("@ais_id", txtKlantAis_id.getText());
-        }
-
-        if (tekst.contains("@zoekdatum")) {
-            tekst = tekst.replace("@zoekdatum", formatDatum(txtDatum.getText(), 1));
-        }
-
-        if (txtDatum.getText().length()>0) {
-            tekst = tekst.replaceAll("(?i)" + "@[a-z]*datum", formatDatum(txtDatum.getText(), 2));
-        }
-
-
-        return tekst;
-    }
-
     /**
      * Formatteer de datum afhankelijk van het veld
      * @param datum dd-mm-jjjj
-     * @param format 1=zoekdatum 2=omgekeerd
+     * @param format 1=zoekdatum 2=omgekeerd 3=timestamp
      * @return
      */
     private String formatDatum(String datum, int format) {
@@ -391,6 +350,8 @@ public class QueryForm {
             result = datum.substring(6, 10) + datum.substring(3, 5) + datum.substring(0, 2);
         } else if (format == 2) {
             result = datum.substring(6, 10) + "-" + datum.substring(3, 5) + "-" +  datum.substring(0, 2);
+        } else if (format == 3) {
+            result = datum.substring(6, 10) + "-" + datum.substring(3, 5) + "-" +  datum.substring(0, 2) + " " + datum.substring(11, 13) + ":" + datum.substring(14, 16) + ":" +  datum.substring(17, 19);
         }
 
         return result;
@@ -446,7 +407,7 @@ public class QueryForm {
      * Geef de tekst in de titel combobox
      * @return
      */
-    protected Titels getTitel() {
+    protected Titel getTitel() {
         return selectedTitel;
     }
 
@@ -454,10 +415,12 @@ public class QueryForm {
         String logDir = ".";
         String logNaam = "QueryDb.log";
 
+        util = new Utility();
+
         try {
             MijnLog mijnlog = new MijnLog(logDir, logNaam, true);
-            log = mijnlog.getLog();
-            log.setLevel(Level.INFO);
+            util.setLog(mijnlog.getLog());
+            util.getLog().setLevel(Level.INFO);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -485,10 +448,9 @@ public class QueryForm {
             ini.schrijf("Algemeen", "queryfile", queryFile);
             ini.schrijf("Algemeen", "dbdir", dbDir);
             ini.schrijf("Algemeen", "dbnaam", dbNaam);
-            log.info("Inifile " + inifile + " aangemaakt en gevuld");
+            util.getLog().info("Inifile " + inifile + " aangemaakt en gevuld");
         }
-
-        db = new QueryDb(dbDir, dbNaam);
+        util.setDb(new QueryDb(dbDir, dbNaam));
 
         JFrame frame = new JFrame("QueryForm");
         frame.setContentPane(new QueryForm().mainPanel);

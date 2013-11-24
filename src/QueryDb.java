@@ -117,7 +117,7 @@ public class QueryDb extends Sqlite {
         try {
             int i = 0;
             while (rst.next()) {
-                items.add(new Titels(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
+                items.add(new Titel(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
             }
         } catch(Exception e) {
             System.out.println(e.getMessage());
@@ -126,12 +126,12 @@ public class QueryDb extends Sqlite {
     }
 
     public Object[] zoekTitels(String sleutel) {
-        Object[] items = new Titels[50];
+        Object[] items = new Titel[50];
         ResultSet rst = execute("select id, titel from query where titel like '%" +  sleutel + "%'");
         try {
             int i = 0;
             while (rst.next()) {
-                items[i++] = (new Titels(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
+                items[i++] = (new Titel(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
             }
         } catch(Exception e) {
             System.out.println(e.getMessage());
@@ -192,9 +192,9 @@ public class QueryDb extends Sqlite {
      * @param titel
      * @return
      */
-    public boolean wijzigQueryTekst(Titels titel) {
+    public boolean wijzigQueryTekst(Titel titel, String tekst) {
 
-        String tekst = titel.getTitel().replaceAll("'", "''");
+        tekst = tekst.replaceAll("'", "''");
         String sql = "update query" +
                 " set tekst = '" + tekst + "'" +
                 " where id = " + titel.getId();
@@ -208,7 +208,7 @@ public class QueryDb extends Sqlite {
      * @param titel
      * @return
      */
-    public boolean verwijderQueryTekst(Titels titel) {
+    public boolean verwijderQueryTekst(Titel titel) {
 
         String sql = "delete query" +
                 " where id = " + titel.getId();
