@@ -5,8 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -80,6 +79,10 @@ public class QueryForm {
 //TODO menu voor bestandsactie
 
     public QueryForm() {
+        // Dialoogvenster voor wijzigen en toevoegen variabelen
+        util.getVariabeledialog().pack();
+        util.getVariabeledialog().setModal(true);
+        util.getVariabeledialog().setVisible(false);
 
         // Initialisatie van het scherm
         txtFilenaam.setText(queryFile);
@@ -87,6 +90,7 @@ public class QueryForm {
         txtDatum.setText(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()).toString());
         doAction("txtdatum");
 
+        // Vullen van de comboboxen vanuit de database
         util.vulCategorien(cmbCategorie);
         selectedCategorie = cmbCategorie.getItemAt(0).toString();
         util.vulTitels(selectedCategorie, cmbTitel);
@@ -221,39 +225,63 @@ public class QueryForm {
 
             }
         });
-        txtApotheekId.addActionListener(new ActionListener() {
+        txtApotheekId.addFocusListener(new FocusListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            public void focusGained(FocusEvent focusEvent) {
+
+            }
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
                 util.setVariabele("apotheek_id", txtApotheekId.getText());
             }
         });
-        txtApotheekNaam.addActionListener(new ActionListener() {
+        txtApotheekNaam.addFocusListener(new FocusListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                util.setVariabele("apotheek_naam", txtApotheekNaam.getText());
+            public void focusGained(FocusEvent focusEvent) {
+
+            }
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
+                util.setVariabele("apotheeknaam", txtApotheekNaam.getText());
             }
         });
-        txtApotheekAgb.addActionListener(new ActionListener() {
+        txtApotheekAgb.addFocusListener(new FocusListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            public void focusGained(FocusEvent focusEvent) {
+
+            }
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
                 util.setVariabele("apotheek_agb", txtApotheekAgb.getText());
             }
         });
-        txtKlantenId.addActionListener(new ActionListener() {
+        txtKlant_id.addFocusListener(new FocusListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                util.setVariabele("klantenid", txtKlantenId.getText());
+            public void focusGained(FocusEvent focusEvent) {
+
             }
-        });
-        txtKlant_id.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            public void focusLost(FocusEvent focusEvent) {
                 util.setVariabele("klant_id", txtKlant_id.getText());
             }
         });
-        txtDatum.addActionListener(new ActionListener() {
+        txtKlantenId.addFocusListener(new FocusListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+            public void focusGained(FocusEvent focusEvent) {
+
+            }
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
+                util.setVariabele("klantenid", txtKlantenId.getText());
+            }
+        });
+        txtDatum.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent focusEvent) {
+
+            }
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
                 doAction("txtdatum");
             }
         });

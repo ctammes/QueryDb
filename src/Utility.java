@@ -1,8 +1,8 @@
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by chris on 22-11-13.
@@ -16,10 +16,14 @@ public class Utility {
     // Variabelen in de query (@...)
     // key   = naam (zonder @)
     // value = waarde
-    private HashMap<String, String> variabelen = new HashMap<String, String>();
+//    private HashMap<String, String> variabelen = new HashMap<String, String>();
+    private ArrayList<Variabele> variabelen = new ArrayList<Variabele>();
+    private VariabeleLijst varlijst = new VariabeleLijst();
 
     // Initialiseer logger
     private Logger log = Logger.getLogger(QueryForm.class.getName());
+
+    private VariabeleDialog variabeledialog = new VariabeleDialog();
 
     /**
      * Vul queryvariabele
@@ -27,7 +31,8 @@ public class Utility {
      * @param waarde
      */
     public void setVariabele(String naam, String waarde) {
-        variabelen.put(naam, waarde);
+//        variabelen.put(naam, waarde);
+        varlijst.add(new Variabele(naam, waarde));
     }
 
     /**
@@ -36,10 +41,18 @@ public class Utility {
      * @return
      */
     public String getVariabele(String naam) {
-        return variabelen.get(naam);
+        String waarde = "";
+        for (Variabele var : variabelen) {
+            if (var.getNaam() == naam) {
+                waarde = var.getWaarde();
+                break;
+            }
+        }
+        return waarde;
+//        return variabelen.get(naam);
     }
 
-    public HashMap<String, String> getVariabelen() {
+    public ArrayList<Variabele> getVariabelen() {
         return variabelen;
     }
 
@@ -50,6 +63,8 @@ public class Utility {
     public void setLog(Logger log) {
         this.log = log;
     }
+
+    protected VariabeleDialog getVariabeledialog() { return variabeledialog; };
 
     protected void setDb(QueryDb db) {
         this.db = db;
@@ -119,16 +134,44 @@ public class Utility {
      * @return
      */
     protected String parseQuery(String tekst) {
+        // 'set @' eruit
         tekst = tekst.replaceAll("(?i)" + "^set @[^;]+;", "");
-        if (! variabelen.isEmpty()) {
-            Set<String> namen = variabelen.keySet();
-            for (String naam: namen) {
-                if (tekst.contains("@" + naam) && variabelen.containsKey(naam)) {
-                    tekst = tekst.replace("@" + naam, variabelen.get(naam).toString());
-                }
-            }
-        }
+        String waarde = "";
+        // Variabelen opzoeken en verwerken
+        Pattern pat = Pattern.compile("@([^@]+?)\\b");
+        Matcher mat = pat.matcher(tekst);
+        int start = 0;
+        while (mat.find(start)) {
+            String naam = mat.group(1);
+//            for (Variabele var : varlijst.list()) {
+//                if (var.getNaam() == naam) {
+//                    waarde = var.getWaarde();
+//                }
+//            }
 
+            if (varlijst.contains(naam)) {
+                waarde = varlijst.get(naam);
+            } else {
+                variabeledialog.setTxtNaam(naam);
+                variabeledialog.setVisible(true);
+                variabeledialog.toFront();
+                waarde=variabeledialog.getTxtWaarde();
+                varlijst.add(new Variabele(naam, waarde));
+            }
+
+//            if (variabelen.contains(naam)) {
+//                waarde = variabelen.get(variabelen.indexOf(naam)).toString();
+//            } else {
+//                variabeledialog.setTxtNaam(naam);
+//                variabeledialog.setVisible(true);
+//                variabeledialog.toFront();
+//                waarde=variabeledialog.getTxtWaarde();
+//                variabelen.add(new Variabele(naam, waarde));
+//            }
+            tekst = tekst.replace("@" + naam, waarde);
+
+            start = mat.toMatchResult().end(1);
+        }
         return tekst;
     }
 
