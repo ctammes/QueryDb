@@ -112,6 +112,17 @@ public class Utility {
 
 
     /**
+     * Vul de querytekst ahv. geselecteerde titel direct uit db, zonder parse
+     * @param titel
+     * @param text
+     */
+    protected void vulPlainTekst(Titel titel, JTextArea text){
+        String tekst = db.leesTekstById(titel.getId());
+        text.setText(tekst);
+    }
+
+
+    /**
      * Lees de categorien uit de database
      * @return
      */
@@ -134,8 +145,8 @@ public class Utility {
      * @return
      */
     protected String parseQuery(String tekst) {
-        // 'set @' eruit
-        tekst = tekst.replaceAll("(?i)" + "^set @[^;]+;", "");
+        // 'set @' eruit, behalve als er een (select ...) op volgt
+        tekst = tekst.replaceAll("(?i)" + "set @[^;(]+;\\n", "");
         String waarde = "";
         // Variabelen opzoeken en verwerken
         Pattern pat = Pattern.compile("@([^@]+?)\\b");
@@ -159,15 +170,6 @@ public class Utility {
                 varlijst.add(new Variabele(naam, waarde));
             }
 
-//            if (variabelen.contains(naam)) {
-//                waarde = variabelen.get(variabelen.indexOf(naam)).toString();
-//            } else {
-//                variabeledialog.setTxtNaam(naam);
-//                variabeledialog.setVisible(true);
-//                variabeledialog.toFront();
-//                waarde=variabeledialog.getTxtWaarde();
-//                variabelen.add(new Variabele(naam, waarde));
-//            }
             tekst = tekst.replace("@" + naam, waarde);
 
             start = mat.toMatchResult().end(1);
@@ -194,7 +196,25 @@ public class Utility {
         return result;
     }
 
+    protected Object[][] vulVariabeleTableData() {
+        if (varlijst.size() == 0) {
+            varlijst.add(new Variabele("apotheek_id", true));
+            varlijst.add(new Variabele("apotheek_agb", true));
+            varlijst.add(new Variabele("apotheek_naam", true));
+            varlijst.add(new Variabele("klant_id", true));
+            varlijst.add(new Variabele("klantenid", true));
+        }
 
+        Object[][] data = new Object[varlijst.size()+1][2];
+        int i = 0;
+        for (Variabele var : varlijst.list()) {
+            data[i][0] = var.getNaam();
+            data[i][1] = var.getWaarde();
+            i++;
+        }
+
+        return data;
+    }
 
 
 }

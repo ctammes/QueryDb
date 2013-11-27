@@ -95,8 +95,9 @@ public class QueryForm {
         selectedCategorie = cmbCategorie.getItemAt(0).toString();
         util.vulTitels(selectedCategorie, cmbTitel);
         selectedTitel = (Titel) cmbTitel.getItemAt(0);
-        Titel titel = selectedTitel;
-        util.vulTekst(titel, txtTekst);
+        //TODO ???
+//        Titel titel = selectedTitel;
+        util.vulTekst(selectedTitel, txtTekst);
 
         btnVerwerk.addActionListener(new ActionListener() {
             @Override

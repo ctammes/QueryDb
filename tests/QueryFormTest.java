@@ -158,7 +158,102 @@ public class QueryFormTest {
 
     }
 
-    private String formatDatum(String datum, int format) {
+    @Test
+    public void testZoekVariabelen() {
+        String tekst = "set @klant_id = 64226;\n" +
+                "set @agb = '02008581';\n" +
+                "set @apo_id = (select id from hergebruik.apotheken where agb_code = @agb);\n" +
+                "update bestellingen\n" +
+                "set verzonden = 'N', \n" +
+                "aanmaakdatum = DATE_ADD(CURDATE(), INTERVAL -5 DAY ),\n" +
+                "apotheek_id = @apo_id\n" +
+                "where klant_id = @klant_id;\n" +
+                "\n" +
+                "set bestelstatus = 'N'\n" +
+                "where bestelnummer in\n" +
+                "(select bestelnummer from bestellingen \n" +
+                "where klant_id = @klant_id); \n" +
+                "\n" +
+                "update medicijnen\n" +
+                "set `herhaling_besteld`='N',\n" +
+                "proaktief = 'Y', \n" +
+                "herhalingsdatum = DATE_ADD(CURDATE(), INTERVAL -5 DAY ),\n" +
+                "klanten_id = \n" +
+                "\t(select id from klanten\n" +
+                "\twhere klant_id = @klant_id)\n" +
+                "where ais_record_id in\n" +
+                "(select ais_record_id from bestelregels\n" +
+                "where bestelnummer in\n" +
+                "(select bestelnummer from bestellingen \n" +
+                "where klant_id = @klant_id)); \n" +
+                "\n";
+        Pattern pat = Pattern.compile("@([^@]+?)\\b");
+        Matcher mat = pat.matcher(tekst);
+        int start = 0;
+        while (mat.find(start)) {
+            System.out.println(mat.group(1));
+            start = mat.toMatchResult().end(1);
+        }
+    }
+
+    @Test
+    public void testVariabeleRegex() {
+        String tekst = "set @klant_id = 64226;\n" +
+                "set @agb = '02008581';\n" +
+                "set @apo_id = (select id from hergebruik.apotheken where agb_code = @agb);\n" +
+                "update bestellingen\n" +
+                "set verzonden = 'N', \n" +
+                "aanmaakdatum = DATE_ADD(CURDATE(), INTERVAL -5 DAY ),\n" +
+                "apotheek_id = @apo_id\n" +
+                "where klant_id = @klant_id;\n" +
+                "\n" +
+                "set bestelstatus = 'N'\n" +
+                "where bestelnummer in\n" +
+                "(select bestelnummer from bestellingen \n" +
+                "where klant_id = @klant_id); \n" +
+                "\n" +
+                "update medicijnen\n" +
+                "set `herhaling_besteld`='N',\n" +
+                "proaktief = 'Y', \n" +
+                "herhalingsdatum = DATE_ADD(CURDATE(), INTERVAL -5 DAY ),\n" +
+                "klanten_id = \n" +
+                "\t(select id from klanten\n" +
+                "\twhere klant_id = @klant_id)\n" +
+                "where ais_record_id in\n" +
+                "(select ais_record_id from bestelregels\n" +
+                "where bestelnummer in\n" +
+                "(select bestelnummer from bestellingen \n" +
+                "where klant_id = @klant_id)); \n" +
+                "\n";
+        tekst = tekst.replaceAll("(?i)" + "^set @[^;]+;", "");
+        System.out.println(tekst);
+
+        Pattern pat = Pattern.compile("@([^@]+?)\\b");
+        Matcher mat = pat.matcher(tekst);
+        int start = 0;
+        while (mat.find(start)) {
+            String naam = mat.group(1);
+            System.out.println(naam);
+            tekst = tekst.replace("@" + naam, naam.toUpperCase());
+            start = mat.toMatchResult().end(1);
+        }
+        System.out.println(tekst);
+
+
+    }
+
+    @Test
+    public void testVariabeleRegex2() {
+        String tekst = "set @klant_id = 64226;\n" +
+                "set @agb = '02008581';\n" +
+                "set @apo_id = (select id from hergebruik.apotheken where agb_code = @agb);\n" +
+                "update bestellingen\n";
+        tekst = tekst.replaceAll("(?i)" + "set @[^;(]+;\\n", "");
+        System.out.println(tekst);
+
+    }
+
+        private String formatDatum(String datum, int format) {
         String result = "";
         if (format == 1) {
             result = datum.substring(6, 10) + datum.substring(3, 5) + datum.substring(0, 2);

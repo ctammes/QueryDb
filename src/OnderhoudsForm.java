@@ -19,6 +19,7 @@ public class OnderhoudsForm {
     private JButton btnCancel;
     private JButton btnNieuw;
     private JButton btnVerwijderen;
+    private JButton btnLezen;
 
     // Utility functies enzo
     Utility util = null;
@@ -122,6 +123,13 @@ public class OnderhoudsForm {
                 JOptionPane.showMessageDialog(null, "Nieuwe query toevoegen", "info", JOptionPane.INFORMATION_MESSAGE);
                 txtQuery.setText("");
                 newId = -1;
+            }
+        });
+        btnLezen.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                Titel titel = (Titel) cmbTitel.getSelectedItem();
+                util.vulPlainTekst(titel, txtQuery);
             }
         });
     }
