@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -6,9 +7,10 @@ import java.util.regex.Pattern;
 
 /**
  * Created by chris on 22-11-13.
+ * Singleton class
  * Gedeelde code voor QueryForm project
  */
-public class Utility {
+public final class Utility {
 
     // Database
     private QueryDb db;
@@ -24,14 +26,26 @@ public class Utility {
     private Logger log = Logger.getLogger(QueryForm.class.getName());
 
     private VariabeleDialog variabeledialog = new VariabeleDialog();
+    private VariabeleTable variabeletable = null;
+
+    private static final Utility utility = new Utility();
+
+    private Utility()
+    {
+        System.err.println( "Utility object created." );
+    }
+
+    public static Utility getInstance()
+    {
+        return utility;
+    } //
 
     /**
      * Vul queryvariabele
      * @param naam
      * @param waarde
      */
-    public void setVariabele(String naam, String waarde) {
-//        variabelen.put(naam, waarde);
+    void setVariabele(String naam, String waarde) {
         varlijst.add(new Variabele(naam, waarde));
     }
 
@@ -40,7 +54,7 @@ public class Utility {
      * @param naam
      * @return
      */
-    public String getVariabele(String naam) {
+    String getVariabele(String naam) {
         String waarde = "";
         for (Variabele var : variabelen) {
             if (var.getNaam() == naam) {
@@ -52,25 +66,25 @@ public class Utility {
 //        return variabelen.get(naam);
     }
 
-    public ArrayList<Variabele> getVariabelen() {
+    ArrayList<Variabele> getVariabelen() {
         return variabelen;
     }
 
-    public Logger getLog() {
+    Logger getLog() {
         return log;
     }
 
-    public void setLog(Logger log) {
+    void setLog(Logger log) {
         this.log = log;
     }
 
-    protected VariabeleDialog getVariabeledialog() { return variabeledialog; };
+    VariabeleDialog getVariabeledialog() { return variabeledialog; };
 
-    protected void setDb(QueryDb db) {
+    void setDb(QueryDb db) {
         this.db = db;
     }
 
-    protected QueryDb getDb() {
+    QueryDb getDb() {
         return db;
     }
 
@@ -78,7 +92,7 @@ public class Utility {
      * Vul de categorie combobox
      * @param combo
      */
-    protected void vulCategorien(JComboBox combo) {
+    void vulCategorien(JComboBox combo) {
         ArrayList<String> categorien = leesCategorienDb();
         combo.removeAll();
         for (String categorie: categorien) {
@@ -93,7 +107,7 @@ public class Utility {
      * @param categorie
      * @param combo
      */
-    protected void vulTitels(String categorie, JComboBox combo) {
+    void vulTitels(String categorie, JComboBox combo) {
         ArrayList<Object> titels = leesTitelsDb(categorie);
         DefaultComboBoxModel mod=new DefaultComboBoxModel(titels.toArray());
         combo.setModel(mod);
@@ -105,7 +119,7 @@ public class Utility {
      * @param titel
      * @param text
      */
-    protected void vulTekst(Titel titel, JTextArea text){
+    void vulTekst(Titel titel, JTextArea text){
         String tekst = db.leesTekstById(titel.getId());
         text.setText(parseQuery(tekst));
     }
@@ -116,7 +130,7 @@ public class Utility {
      * @param titel
      * @param text
      */
-    protected void vulPlainTekst(Titel titel, JTextArea text){
+    void vulPlainTekst(Titel titel, JTextArea text){
         String tekst = db.leesTekstById(titel.getId());
         text.setText(tekst);
     }
@@ -126,7 +140,7 @@ public class Utility {
      * Lees de categorien uit de database
      * @return
      */
-    protected ArrayList<String> leesCategorienDb() {
+    ArrayList<String> leesCategorienDb() {
         return db.leesCategorien();
     }
 
@@ -135,7 +149,7 @@ public class Utility {
      * @param categorie
      * @return
      */
-    protected ArrayList<Object> leesTitelsDb(String categorie) {
+    ArrayList<Object> leesTitelsDb(String categorie) {
         return db.leesTitels(categorie);
     }
 
@@ -144,7 +158,7 @@ public class Utility {
      * @param tekst
      * @return
      */
-    protected String parseQuery(String tekst) {
+    String parseQuery(String tekst) {
         // 'set @' eruit, behalve als er een (select ...) op volgt
         tekst = tekst.replaceAll("(?i)" + "set @[^;(]+;\\n", "");
         String waarde = "";
@@ -154,20 +168,13 @@ public class Utility {
         int start = 0;
         while (mat.find(start)) {
             String naam = mat.group(1);
-//            for (Variabele var : varlijst.list()) {
-//                if (var.getNaam() == naam) {
-//                    waarde = var.getWaarde();
-//                }
-//            }
-
             if (varlijst.contains(naam)) {
                 waarde = varlijst.get(naam);
             } else {
-                variabeledialog.setTxtNaam(naam);
-                variabeledialog.setVisible(true);
-                variabeledialog.toFront();
-                waarde=variabeledialog.getTxtWaarde();
-                varlijst.add(new Variabele(naam, waarde));
+
+                varlijst.add(new Variabele(naam, ""));
+                toonVariabeleTable();
+                waarde = varlijst.get(naam);
             }
 
             tekst = tekst.replace("@" + naam, waarde);
@@ -183,7 +190,7 @@ public class Utility {
      * @param format 1=zoekdatum 2=omgekeerd 3=timestamp
      * @return
      */
-    protected String formatDatum(String datum, int format) {
+    String formatDatum(String datum, int format) {
         String result = "";
         if (format == 1) {
             result = datum.substring(6, 10) + datum.substring(3, 5) + datum.substring(0, 2);
@@ -196,16 +203,24 @@ public class Utility {
         return result;
     }
 
-    protected Object[][] vulVariabeleTableData() {
-        if (varlijst.size() == 0) {
+    /**
+     * Vul de variabelen tabel vanuit het lijst object
+     * @return
+     */
+    Object[][] vulVariabeleTableData() {
+        // Initieel vullen met vaste vasriabelen
+        if (varlijst.list().size() == 0) {
             varlijst.add(new Variabele("apotheek_id", true));
             varlijst.add(new Variabele("apotheek_agb", true));
-            varlijst.add(new Variabele("apotheek_naam", true));
+            varlijst.add(new Variabele("apotheeknaam", true));
             varlijst.add(new Variabele("klant_id", true));
             varlijst.add(new Variabele("klantenid", true));
+            varlijst.add(new Variabele("zoekdatum", true));
+            varlijst.add(new Variabele("datum", true));
+            varlijst.add(new Variabele("timestamp", true));
         }
 
-        Object[][] data = new Object[varlijst.size()+1][2];
+        Object[][] data = new Object[varlijst.size()][2];
         int i = 0;
         for (Variabele var : varlijst.list()) {
             data[i][0] = var.getNaam();
@@ -214,6 +229,37 @@ public class Utility {
         }
 
         return data;
+    }
+
+    /**
+     * Vul het lijst object vanuit de variabelen tabel
+     * @param data
+     */
+    void vulVariabeleLijstUitTable(Object[][] data) {
+        if (data != null) {
+            for (Object[] row : data) {
+                if (!row[0].toString().equals("")) {
+                    varlijst.put(row[0].toString(), row[1].toString());
+                    System.out.println(row[0] + ": " + row[1]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Toon de tabel met variabelen
+     */
+     void toonVariabeleTable() {
+        if (variabeletable == null) {
+            variabeletable = new VariabeleTable();
+            variabeletable.setPreferredSize(new Dimension(300,300));
+            variabeletable.pack();
+        } else {
+            variabeletable.vulData();
+        }
+
+        variabeletable.setVisible(true);
+        variabeletable.toFront();
     }
 
 

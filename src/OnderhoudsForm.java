@@ -22,7 +22,7 @@ public class OnderhoudsForm {
     private JButton btnLezen;
 
     // Utility functies enzo
-    Utility util = null;
+    Utility util;
 
     // Dit zijn de (nieuwe) waarden die opgeslagen moeten worden
     private int newId = 0;
@@ -30,8 +30,8 @@ public class OnderhoudsForm {
     private String newTitel = null;
     private HashMap<String, String> variabelen;
 
-    public OnderhoudsForm(String categorie, Titel titel, String tekst, Utility utility) {
-        util = utility;
+    public OnderhoudsForm(String categorie, Titel titel, String tekst) {
+        util = Utility.getInstance();
         util.vulCategorien(cmbCategorie);
 
         // Vul de velden

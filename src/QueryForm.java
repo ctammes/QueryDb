@@ -51,6 +51,7 @@ public class QueryForm {
     private JButton btnVervers;
     private JButton btnklembord;
     private JButton btnOnderhoud;
+    private JButton button1;
 
     private static MijnIni ini = null;
     private static String inifile = "QueryDb.ini";
@@ -60,7 +61,9 @@ public class QueryForm {
     private static String dbNaam = "QueryDb.db";
 
 //    protected static QueryDb db = null;
-    protected static Utility util = null;
+//    private static Utility util = new Utility();
+
+    static Utility util;
 
     private OnderhoudsForm onderhoudsform = null;
 
@@ -199,9 +202,7 @@ public class QueryForm {
         btnklembord.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                StringSelection stringSelection = new StringSelection(txtTekst.getText());
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                clipboard.setContents(stringSelection, stringSelection);
+                tekstNaarKlembord(txtTekst.getText());
             }
         });
         btnOnderhoud.addActionListener(new ActionListener() {
@@ -209,7 +210,7 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (onderhoudsFrame == null){                   // initialisatie
                     onderhoudsFrame = new JFrame("OnderhoudsForm");
-                    onderhoudsform = new OnderhoudsForm(selectedCategorie, selectedTitel, txtTekst.getText(), util);
+                    onderhoudsform = new OnderhoudsForm(selectedCategorie, selectedTitel, txtTekst.getText());
                     onderhoudsFrame.setContentPane(onderhoudsform.mainPanel);
                     onderhoudsFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
                     onderhoudsFrame.setLocation(100, 100);
@@ -287,8 +288,18 @@ public class QueryForm {
             }
         });
 
+        button1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                util.toonVariabeleTable();
+            }
+        });
     }
 
+    /**
+     * Actie gekoppeld aan een tekstveld
+     * @param naam
+     */
     private void doAction(String naam) {
         if (naam == "txtdatum") {
             util.setVariabele("zoekdatum", util.formatDatum(txtDatum.getText(), 1));
@@ -374,8 +385,7 @@ public class QueryForm {
     /**
      * Stuur querytekst naar het system klembord
      */
-    private void tekstNaarKlembord() {
-        String tekst = txtTekst.getText();
+    private void tekstNaarKlembord(String tekst) {
         if (tekst.length() > 0) {
             StringSelection stringSelection = new StringSelection(tekst);
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -429,10 +439,9 @@ public class QueryForm {
         String logDir = ".";
         String logNaam = "QueryDb.log";
 
-        util = new Utility();
-
         try {
             MijnLog mijnlog = new MijnLog(logDir, logNaam, true);
+            util = Utility.getInstance();
             util.setLog(mijnlog.getLog());
             util.getLog().setLevel(Level.INFO);
         } catch (Exception e) {
