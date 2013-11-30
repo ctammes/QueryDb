@@ -5,11 +5,12 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.event.*;
 
-public class VariabeleTable extends JDialog implements TableModelListener {
+public class VariabeleTable extends JDialog implements TableModelListener, KeyListener {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JTable tblVariabele;
+    private JButton button1;
 
     Utility util;
 
@@ -18,6 +19,8 @@ public class VariabeleTable extends JDialog implements TableModelListener {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
+
+        tblVariabele.addKeyListener(this);
 
         VariabeleModel mod = new VariabeleModel();
         tblVariabele.setModel(mod);
@@ -73,20 +76,64 @@ public class VariabeleTable extends JDialog implements TableModelListener {
         dispose();
     }
 
+    /**
+     * Verwijder de regel met 'naam' uit de tabel en de variabele lijst
+     * @param naam
+     */
+    private void removeNaam(String naam) {
+//        VariabeleModel mod = (VariabeleModel) tblVariabele.getModel();
+//        System.out.println(mod.getRowCount());
+//        System.out.println(mod.getValueAt(4, 0));
+//        util.removeVariabele(naam);
+//        mod.removeRow(4);
+
+        util.removeVariabele(naam);
+        vulData();
+        tblVariabele.repaint();
+    }
+
+    /**
+     * Onderdeel van de listener
+     * @param e
+     */
     public void tableChanged(TableModelEvent e) {
         int row = e.getFirstRow();
         int column = e.getColumn();
-//        if (column >=0) {
+        if (column >= 0) {
             TableModel model = (TableModel)e.getSource();
             Object naam = model.getValueAt(row, 0);
             Object waarde = model.getValueAt(row, column);
-            System.out.println(naam + " gewijzigd: " + waarde);
-//        }
+        }
     }
 
     public void vulData() {
         VariabeleModel mod = (VariabeleModel) tblVariabele.getModel();
         mod.data = util.vulVariabeleTableData();
+    }
+
+    @Override
+    public void keyTyped(KeyEvent keyEvent) {
+
+    }
+
+    /**
+     * Verwijderen van een variabele met de Delete toets
+     * @param keyEvent
+     */
+    @Override
+    public void keyPressed(KeyEvent keyEvent) {
+        if (keyEvent.getKeyCode() == KeyEvent.VK_DELETE && tblVariabele.getSelectedRow() != -1) {
+            String msg = tblVariabele.getValueAt(tblVariabele.getSelectedRow(), 0) + " wordt verwijderd";
+            if (JOptionPane.showConfirmDialog(null, msg, "Bevestig", JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+                removeNaam(tblVariabele.getValueAt(tblVariabele.getSelectedRow(), 0).toString());
+//                removeRow(tblVariabele.getSelectedRow());
+            }
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent keyEvent) {
+
     }
 
 //    public static void main(String[] args) {
@@ -172,6 +219,10 @@ public class VariabeleTable extends JDialog implements TableModelListener {
         @Override
         public boolean isCellEditable(int row, int col) {
             return col == 1;
+        }
+
+        public void removeRow(int row) {
+            System.out.println("remove row" + row);
         }
 
     }

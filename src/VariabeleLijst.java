@@ -18,6 +18,16 @@ public class VariabeleLijst extends ArrayList {
     }
 
     /**
+     * Element verwijderen op naam
+     * @param naam
+     */
+    public void remove(String naam) {
+        Variabele var = zoekElement(naam);
+        list.remove(var);
+    }
+
+
+    /**
      * Geef waarde van element
      * @param naam
      * @return
@@ -64,7 +74,7 @@ public class VariabeleLijst extends ArrayList {
     }
 
     /**
-     * Geef alle elementen
+     * Geef lijst met alle elementen
      * @return
      */
     public List<Variabele> list() {
@@ -72,7 +82,7 @@ public class VariabeleLijst extends ArrayList {
     }
 
     /**
-     * Zoek element met naam
+     * Zoek element op naam
      * @param naam
      * @return
      */
