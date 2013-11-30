@@ -51,7 +51,7 @@ public class QueryForm {
     private JButton btnVervers;
     private JButton btnklembord;
     private JButton btnOnderhoud;
-    private JButton button1;
+    private JButton btnVariabelen;
 
     private static MijnIni ini = null;
     private static String inifile = "QueryDb.ini";
@@ -288,7 +288,7 @@ public class QueryForm {
             }
         });
 
-        button1.addActionListener(new ActionListener() {
+        btnVariabelen.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 util.toonVariabeleTable();

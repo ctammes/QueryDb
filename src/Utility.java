@@ -49,6 +49,10 @@ public final class Utility {
         varlijst.add(new Variabele(naam, waarde));
     }
 
+    void removeVariabele(String naam) {
+        varlijst.remove(naam);
+    }
+
     /**
      * Lees queryvariabele
      * @param naam
@@ -162,25 +166,36 @@ public final class Utility {
         // 'set @' eruit, behalve als er een (select ...) op volgt
         tekst = tekst.replaceAll("(?i)" + "set @[^;(]+;\\n", "");
         String waarde = "";
-        // Variabelen opzoeken en verwerken
+        // Variabelen eerst opzoeken en toevoegen aan de lijst
         Pattern pat = Pattern.compile("@([^@]+?)\\b");
         Matcher mat = pat.matcher(tekst);
         int start = 0;
+        boolean toegevoegd = false;
         while (mat.find(start)) {
             String naam = mat.group(1);
-            if (varlijst.contains(naam)) {
-                waarde = varlijst.get(naam);
-            } else {
-
+            if (! varlijst.contains(naam)) {
                 varlijst.add(new Variabele(naam, ""));
-                toonVariabeleTable();
-                waarde = varlijst.get(naam);
+                toegevoegd = true;
             }
-
-            tekst = tekst.replace("@" + naam, waarde);
-
             start = mat.toMatchResult().end(1);
         }
+
+        // Ontbrekende variabelen laten invullen
+        if (toegevoegd) {
+            toonVariabeleTable();
+        }
+
+        // Variabelen vervolgens vervangen
+        start = 0;
+        while (mat.find(start)) {
+            String naam = mat.group(1);
+            waarde = varlijst.get(naam);
+            if (waarde != "") {
+                tekst = tekst.replace("@" + naam, waarde);
+            }
+            start = mat.toMatchResult().end(1);
+        }
+
         return tekst;
     }
 
@@ -240,7 +255,6 @@ public final class Utility {
             for (Object[] row : data) {
                 if (!row[0].toString().equals("")) {
                     varlijst.put(row[0].toString(), row[1].toString());
-                    System.out.println(row[0] + ": " + row[1]);
                 }
             }
         }
