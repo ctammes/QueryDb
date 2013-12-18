@@ -52,6 +52,8 @@ public class QueryForm {
     private JButton btnklembord;
     private JButton btnOnderhoud;
     private JButton btnVariabelen;
+    private JTextField txtDuur;
+    private JTextField txtCcvId;
 
     private static MijnIni ini = null;
     private static String inifile = "QueryDb.ini";
@@ -236,6 +238,7 @@ public class QueryForm {
             public void focusGained(FocusEvent focusEvent) {
 
             }
+
             @Override
             public void focusLost(FocusEvent focusEvent) {
                 util.setVariabele("apotheek_id", txtApotheekId.getText());
@@ -291,11 +294,33 @@ public class QueryForm {
                 doAction("txtdatum");
             }
         });
+        txtDuur.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                util.setVariabele("duur", txtDuur.getText());
+            }
+        });
 
         btnVariabelen.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 util.toonVariabeleTable();
+            }
+        });
+        txtCcvId.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent focusEvent) {
+
+            }
+
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
+                util.setVariabele("ccv_id", txtCcvId.getText());
             }
         });
     }

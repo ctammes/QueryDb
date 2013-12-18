@@ -122,7 +122,6 @@ public class OnderhoudsForm {
                 Titel titel = (Titel) cmbTitel.getSelectedItem();
                 String msg = "Je gaat de query met id " + titel.getId() + " verwijderen. Doorgaan ?";
                 if (JOptionPane.showConfirmDialog(null, msg, "Bevestig keuze", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    JOptionPane.showMessageDialog(null, "Query wordt verwijderd", "info", JOptionPane.INFORMATION_MESSAGE);
                     util.getDb().verwijderQueryTekst(titel);
                     util.getLog().info("Query verwijderen: " + titel.getId() + " - " + titel.getTitel());
                     // TODO categorie combobox in QueryForm verversen
@@ -132,7 +131,6 @@ public class OnderhoudsForm {
         btnNieuw.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                JOptionPane.showMessageDialog(null, "Nieuwe query toevoegen", "info", JOptionPane.INFORMATION_MESSAGE);
                 txtQuery.setText("");
                 newId = -1;
             }

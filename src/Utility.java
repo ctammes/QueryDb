@@ -41,12 +41,16 @@ public final class Utility {
     } //
 
     /**
-     * Vul queryvariabele
+     * Vul queryvariabele of wijzig waarde
      * @param naam
      * @param waarde
      */
     void setVariabele(String naam, String waarde) {
-        varlijst.add(new Variabele(naam, waarde));
+        if (varlijst.contains(naam)) {
+            varlijst.put(naam, waarde);
+        } else {
+            varlijst.add(new Variabele(naam, waarde));
+        }
     }
 
     void removeVariabele(String naam) {
@@ -97,12 +101,17 @@ public final class Utility {
      * @param combo
      */
     void vulCategorien(JComboBox combo) {
+        int index = combo.getSelectedIndex();
         ArrayList<String> categorien = leesCategorienDb();
         combo.removeAllItems();
         for (String categorie: categorien) {
             if (categorie.trim() != "" ) {
                 combo.addItem(categorie);
             }
+        }
+        if (index >= 0) {
+            index = (index > combo.getItemCount()-1) ? combo.getItemCount()-1 : index;
+            combo.setSelectedIndex(index);
         }
     }
 
@@ -176,11 +185,15 @@ public final class Utility {
             if (! varlijst.contains(naam)) {
                 varlijst.add(new Variabele(naam, ""));
                 toegevoegd = true;
+            } else {
+                if (varlijst.get(naam) == "") {     // toon ook als waarde niet is ingevuld
+                    toegevoegd = true;
+                }
             }
             start = mat.toMatchResult().end(1);
         }
 
-        // Ontbrekende variabelen laten invullen
+        // Ontbrekende variabelen of variabelen zonder waarde laten invullen
         if (toegevoegd) {
             toonVariabeleTable();
         }
@@ -227,12 +240,14 @@ public final class Utility {
         if (varlijst.list().size() == 0) {
             varlijst.add(new Variabele("apotheek_id", true));
             varlijst.add(new Variabele("apotheek_agb", true));
+            varlijst.add(new Variabele("ccv_id", true));
             varlijst.add(new Variabele("apotheeknaam", true));
             varlijst.add(new Variabele("klant_id", true));
             varlijst.add(new Variabele("klantenid", true));
             varlijst.add(new Variabele("zoekdatum", true));
             varlijst.add(new Variabele("datum", true));
-            varlijst.add(new Variabele("timestamp", true));
+            varlijst.add(new Variabele("tijd", true));
+            varlijst.add(new Variabele("duur", true));
         }
 
         Object[][] data = new Object[varlijst.size()][2];
