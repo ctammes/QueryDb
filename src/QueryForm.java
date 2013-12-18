@@ -146,31 +146,35 @@ public class QueryForm {
         cmbCategorie.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                String categorie = null;
-                if (cmbCategorie.getSelectedItem() != null) {
-                    categorie = cmbCategorie.getSelectedItem().toString();
-                } else {
-                    categorie = cmbCategorie.getItemAt(0).toString();
+                if (cmbCategorie.getItemCount()>0) {        // onderdruk als lijst gewist wordt
+                    String categorie = null;
+                    if (cmbCategorie.getSelectedItem() != null) {
+                        categorie = cmbCategorie.getSelectedItem().toString();
+                    } else {
+                        categorie = cmbCategorie.getItemAt(0).toString();
+                    }
+                    selectedCategorie = categorie;
+                    util.vulTitels(categorie, cmbTitel);
+                    Titel titel = (Titel) cmbTitel.getItemAt(0);
+                    selectedTitel = titel;
+                    util.vulTekst(titel, txtTekst);
                 }
-                selectedCategorie = categorie;
-                util.vulTitels(categorie, cmbTitel);
-                Titel titel = (Titel) cmbTitel.getItemAt(0);
-                selectedTitel = titel;
-                util.vulTekst(titel, txtTekst);
             }
         });
 
         cmbTitel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                Titel titel = null;
-                if (cmbTitel.getSelectedItem() != null) {
-                    titel = (Titel) cmbTitel.getSelectedItem();
-                } else {
-                    titel = (Titel) cmbTitel.getItemAt(0);
+                if (cmbTitel.getItemCount() > 0) {        // onderdruk als lijst gewist wordt
+                    Titel titel = null;
+                    if (cmbTitel.getSelectedItem() != null) {
+                        titel = (Titel) cmbTitel.getSelectedItem();
+                    } else {
+                        titel = (Titel) cmbTitel.getItemAt(0);
+                    }
+                    selectedTitel = titel;
+                    util.vulTekst(titel, txtTekst);
                 }
-                selectedTitel = titel;
-                util.vulTekst(titel, txtTekst);
             }
         });
 

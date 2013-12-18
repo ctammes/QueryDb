@@ -98,7 +98,7 @@ public final class Utility {
      */
     void vulCategorien(JComboBox combo) {
         ArrayList<String> categorien = leesCategorienDb();
-        combo.removeAll();
+        combo.removeAllItems();
         for (String categorie: categorien) {
             if (categorie.trim() != "" ) {
                 combo.addItem(categorie);

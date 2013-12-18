@@ -210,7 +210,7 @@ public class QueryDb extends Sqlite {
      */
     public boolean verwijderQueryTekst(Titel titel) {
 
-        String sql = "delete query" +
+        String sql = "delete from query" +
                 " where id = " + titel.getId();
         executeNoResult(sql);
         return false;

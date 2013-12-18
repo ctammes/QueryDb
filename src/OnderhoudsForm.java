@@ -34,6 +34,9 @@ public class OnderhoudsForm {
         util = Utility.getInstance();
         util.vulCategorien(cmbCategorie);
 
+        // om een of andere reden is het object niet zichtbaar als dit vanuuit de designer wordt gedaan
+        cmbCategorie.setEditable(true);
+
         // Vul de velden
         stelVeldenIn(categorie, titel, tekst);
 
@@ -82,21 +85,28 @@ public class OnderhoudsForm {
                 Titel titel = null;
                 String msg = null;
                 if (newId == -1) {
-                    titel = new Titel(newId, newTitel);
-                    msg = "<html>Er wordt een nieuwe query gemaakt: <br>" + newCategorie + "<br>" + newTitel + ".<br> Doorgaan ?<html>";
+                    if (newCategorie != "" && newTitel != "" && txtQuery.getText() != "") {
+                        titel = new Titel(newId, newTitel);
+                        msg = "<html>Er wordt een nieuwe query gemaakt: <br>categorie: " + newCategorie + "<br>titel: " + newTitel + ".<br> Doorgaan ?<html>";
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Niet alle velden ingevuld!", "Waarschuwing", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
                 } else {
                     titel = (Titel) cmbTitel.getSelectedItem();
                     msg = "Gegevens worden opgeslagen onder id " + titel.getId() + ". Doorgaan ?";
                     util.getDb().wijzigQueryTekst(titel, txtQuery.getText());
                 }
                 if (JOptionPane.showConfirmDialog(null, msg, "Bevestig keuze", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    JOptionPane.showMessageDialog(null, "Gewijzigde tekst wordt opgeslagen", "info", JOptionPane.INFORMATION_MESSAGE);
                     if (newId == -1) {
                         util.getLog().info("Query toevoegen: " + titel.getTitel());
+                        Query query = new Query(newCategorie, newTitel, txtQuery.getText());
+                        util.getDb().schrijfQuery(query);
                     } else {
-                        util.getDb().wijzigQueryTekst(titel, txtQuery.getText());
                         util.getLog().info("Query wijzigen: " + titel.getId() + " - " + titel.getTitel());
+                        util.getDb().wijzigQueryTekst(titel, txtQuery.getText());
                     }
+                    // TODO categorie combobox in QueryForm verversen
                 }
             }
         });
@@ -113,7 +123,9 @@ public class OnderhoudsForm {
                 String msg = "Je gaat de query met id " + titel.getId() + " verwijderen. Doorgaan ?";
                 if (JOptionPane.showConfirmDialog(null, msg, "Bevestig keuze", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     JOptionPane.showMessageDialog(null, "Query wordt verwijderd", "info", JOptionPane.INFORMATION_MESSAGE);
+                    util.getDb().verwijderQueryTekst(titel);
                     util.getLog().info("Query verwijderen: " + titel.getId() + " - " + titel.getTitel());
+                    // TODO categorie combobox in QueryForm verversen
                 }
             }
         });
