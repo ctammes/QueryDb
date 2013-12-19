@@ -244,6 +244,7 @@ public final class Utility {
             varlijst.add(new Variabele("apotheeknaam", true));
             varlijst.add(new Variabele("klant_id", true));
             varlijst.add(new Variabele("klantenid", true));
+            varlijst.add(new Variabele("ais_id", true));
             varlijst.add(new Variabele("zoekdatum", true));
             varlijst.add(new Variabele("datum", true));
             varlijst.add(new Variabele("tijd", true));

@@ -30,6 +30,8 @@ public class OnderhoudsForm {
     private String newTitel = null;
     private HashMap<String, String> variabelen;
 
+    // TODO wat doen bij selectie Categorie? Titels ook aanpassen??
+
     public OnderhoudsForm(String categorie, Titel titel, String tekst) {
         util = Utility.getInstance();
         util.vulCategorien(cmbCategorie);
@@ -39,6 +41,7 @@ public class OnderhoudsForm {
 
         // Vul de velden
         stelVeldenIn(categorie, titel, tekst);
+        newId = titel.getId();
 
         cmbCategorie.addActionListener(new ActionListener() {
             @Override
@@ -95,7 +98,6 @@ public class OnderhoudsForm {
                 } else {
                     titel = (Titel) cmbTitel.getSelectedItem();
                     msg = "Gegevens worden opgeslagen onder id " + titel.getId() + ". Doorgaan ?";
-                    util.getDb().wijzigQueryTekst(titel, txtQuery.getText());
                 }
                 if (JOptionPane.showConfirmDialog(null, msg, "Bevestig keuze", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     if (newId == -1) {
@@ -114,6 +116,7 @@ public class OnderhoudsForm {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JOptionPane.showMessageDialog(null, "Gegevens wijzigen afgebroken", "info", JOptionPane.INFORMATION_MESSAGE);
+                // TODO iets doen met newId, die kan -1 zijn
             }
         });
         btnVerwijderen.addActionListener(new ActionListener() {
@@ -156,5 +159,6 @@ public class OnderhoudsForm {
         // let op: getModel() ertussen, anders werkt het niet!
         cmbTitel.getModel().setSelectedItem(titel);
         txtQuery.setText(tekst);
+        newId = titel.getId();
     }
 }

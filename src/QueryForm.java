@@ -15,10 +15,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// TODO ondexhoud database
-// TODO afhandelen nieuwe variabelen
-// TODO 'set'-regel in query onderdrukken
-// TODO na Verversen ook naar klembord
+// TODO '@'als odnerdeel van email adres moet niet vervangen worden!
 
 /**
  * Created with IntelliJ IDEA.
@@ -203,6 +200,7 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 String tekst = txtTekst.getText();
                 txtTekst.setText(util.parseQuery(tekst));
+                tekstNaarKlembord(tekst);
             }
         });
         btnklembord.addActionListener(new ActionListener() {
@@ -233,6 +231,13 @@ public class QueryForm {
 
             }
         });
+        btnVariabelen.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                util.toonVariabeleTable();
+            }
+        });
+
         txtApotheekId.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent focusEvent) {
@@ -284,6 +289,17 @@ public class QueryForm {
                 util.setVariabele("klantenid", txtKlantenId.getText());
             }
         });
+        txtAis_id.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent focusEvent) {
+
+            }
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
+                util.setVariabele("ais_id", txtAis_id.getText());
+            }
+        });
+
         txtDatum.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent focusEvent) {
@@ -306,12 +322,6 @@ public class QueryForm {
             }
         });
 
-        btnVariabelen.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                util.toonVariabeleTable();
-            }
-        });
         txtCcvId.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent focusEvent) {
