@@ -104,7 +104,7 @@ public class QueryDb extends Sqlite {
                 result.add(rst.getString("categorie"));
             }
         } catch(Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getMessage() + " - " + sql);
         }
 
         return new ArrayList<String>(result);
@@ -120,21 +120,22 @@ public class QueryDb extends Sqlite {
                 items.add(new Titel(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
             }
         } catch(Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getMessage() + " - " + sql);
         }
         return items;
     }
 
     public Object[] zoekTitels(String sleutel) {
         Object[] items = new Titel[50];
-        ResultSet rst = execute("select id, titel from query where titel like '%" +  sleutel + "%'");
+        String sql = "select id, titel from query where titel like '%" +  sleutel + "%'";
+        ResultSet rst = execute(sql);
         try {
             int i = 0;
             while (rst.next()) {
                 items[i++] = (new Titel(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
             }
         } catch(Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getMessage() + " - " + sql);
         }
         return items;
     }
@@ -182,8 +183,13 @@ public class QueryDb extends Sqlite {
         String sql = "insert into query" +
                 " (categorie, titel, tekst)" +
                 " values (" + values + ")";
-        executeNoResult(sql);
-        return false;
+        try {
+            executeNoResult(sql);
+            return true;
+        } catch(Exception e) {
+            System.out.println(e.getMessage() + " - " + sql);
+            return false;
+        }
 
     }
 
@@ -198,8 +204,13 @@ public class QueryDb extends Sqlite {
         String sql = "update query" +
                 " set tekst = '" + tekst + "'" +
                 " where id = " + titel.getId();
-        executeNoResult(sql);
-        return false;
+        try {
+            executeNoResult(sql);
+            return true;
+        } catch(Exception e) {
+            System.out.println(e.getMessage() + " - " + sql);
+            return false;
+        }
 
     }
 
@@ -212,8 +223,13 @@ public class QueryDb extends Sqlite {
 
         String sql = "delete from query" +
                 " where id = " + titel.getId();
-        executeNoResult(sql);
-        return false;
+        try {
+            executeNoResult(sql);
+            return true;
+        } catch(Exception e) {
+            System.out.println(e.getMessage() + " - " + sql);
+            return false;
+        }
 
     }
 

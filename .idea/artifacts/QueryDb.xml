@@ -1,7 +1,7 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="QueryQb">
-    <output-path>$PROJECT_DIR$/out/artifacts/QueryQb</output-path>
-    <root id="archive" name="QueryQb.jar">
+  <artifact type="jar" name="QueryDb">
+    <output-path>$PROJECT_DIR$/out/artifacts/QueryDb</output-path>
+    <root id="archive" name="QueryDb.jar">
       <element id="module-output" name="QueryDb" />
       <element id="file-copy" path="$PROJECT_DIR$/../ini4j-0.5.2.jar" />
       <element id="file-copy" path="$PROJECT_DIR$/../sqlite-jdbc-3.7.2.jar" />

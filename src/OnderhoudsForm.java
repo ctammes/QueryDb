@@ -35,6 +35,7 @@ public class OnderhoudsForm {
     public OnderhoudsForm(String categorie, Titel titel, String tekst) {
         util = Utility.getInstance();
         util.vulCategorien(cmbCategorie);
+        util.vulTitels(cmbCategorie.getItemAt(0).toString(), cmbTitel);
 
         // om een of andere reden is het object niet zichtbaar als dit vanuuit de designer wordt gedaan
         cmbCategorie.setEditable(true);
@@ -56,12 +57,12 @@ public class OnderhoudsForm {
                         categorie = cmbCategorie.getItemAt(0).toString();
                     }
                     newCategorie = categorie;
-                    util.vulTitels(categorie, cmbTitel);
-                    Titel titel = (Titel) cmbTitel.getItemAt(0);
-                    newTitel = titel.getTitel();
-                    newId = titel.getId();
-                    util.vulTekst(titel, txtQuery);
                 }
+                util.vulTitels(newCategorie, cmbTitel);
+                Titel titel = (Titel) cmbTitel.getItemAt(0);
+                newTitel = titel.getTitel();
+                newId = titel.getId();
+                util.vulTekst(titel, txtQuery, false);
             }
         });
         cmbTitel.addActionListener(new ActionListener() {
@@ -78,7 +79,7 @@ public class OnderhoudsForm {
                     }
                     newTitel = titel.getTitel();
                     newId = titel.getId();
-                    util.vulTekst(titel, txtQuery);
+                    util.vulTekst(titel, txtQuery, false);
                 }
             }
         });

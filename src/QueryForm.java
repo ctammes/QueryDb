@@ -99,7 +99,7 @@ public class QueryForm {
         selectedTitel = (Titel) cmbTitel.getItemAt(0);
         //TODO ???
 //        Titel titel = selectedTitel;
-        util.vulTekst(selectedTitel, txtTekst);
+        util.vulTekst(selectedTitel, txtTekst, util.isGestart());
 
         btnVerwerk.addActionListener(new ActionListener() {
             @Override
@@ -156,7 +156,7 @@ public class QueryForm {
                     util.vulTitels(categorie, cmbTitel);
                     Titel titel = (Titel) cmbTitel.getItemAt(0);
                     selectedTitel = titel;
-                    util.vulTekst(titel, txtTekst);
+                    util.vulTekst(titel, txtTekst, util.isGestart());
                 }
             }
         });
@@ -172,7 +172,7 @@ public class QueryForm {
                         titel = (Titel) cmbTitel.getItemAt(0);
                     }
                     selectedTitel = titel;
-                    util.vulTekst(titel, txtTekst);
+                    util.vulTekst(titel, txtTekst, util.isGestart());
                 }
             }
         });
@@ -199,7 +199,7 @@ public class QueryForm {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 String tekst = txtTekst.getText();
-                txtTekst.setText(util.parseQuery(tekst));
+                txtTekst.setText(util.parseQuery(tekst, util.isGestart()));
                 tekstNaarKlembord(tekst);
             }
         });
@@ -520,6 +520,8 @@ public class QueryForm {
         frame.setLocation(100,100);
         frame.pack();
         frame.setVisible(true);
+
+        util.setGestart(true);
 
     }
 

@@ -7,8 +7,8 @@ import java.awt.event.*;
 
 public class VariabeleTable extends JDialog implements TableModelListener, KeyListener {
     private JPanel contentPane;
-    private JButton buttonOK;
-    private JButton buttonCancel;
+    private JButton btnOk;
+    private JButton btnAfbreken;
     private JTable tblVariabele;
     private JButton button1;
 
@@ -18,15 +18,16 @@ public class VariabeleTable extends JDialog implements TableModelListener, KeyLi
         util = Utility.getInstance();
         setContentPane(contentPane);
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
+        getRootPane().setDefaultButton(btnOk);
 
+        // TODO kan dit weg?
         tblVariabele.addKeyListener(this);
 
         VariabeleModel mod = new VariabeleModel();
         tblVariabele.setModel(mod);
         tblVariabele.getModel().addTableModelListener(this);
 
-        buttonOK.addActionListener(new ActionListener() {
+        btnOk.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Nodig om een end edit event af te vuren (setValueAt)
                 if (tblVariabele.isEditing())
@@ -35,7 +36,7 @@ public class VariabeleTable extends JDialog implements TableModelListener, KeyLi
             }
         });
 
-        buttonCancel.addActionListener(new ActionListener() {
+        btnAfbreken.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Nodig om een end edit event af te vuren (setValueAt)
                 if (tblVariabele.isEditing())
@@ -58,6 +59,12 @@ public class VariabeleTable extends JDialog implements TableModelListener, KeyLi
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        contentPane.registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onOK();
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
     }
 
@@ -128,6 +135,8 @@ public class VariabeleTable extends JDialog implements TableModelListener, KeyLi
                 removeNaam(tblVariabele.getValueAt(tblVariabele.getSelectedRow(), 0).toString());
 //                removeRow(tblVariabele.getSelectedRow());
             }
+        } else if (keyEvent.getKeyCode() == KeyEvent.VK_ENTER) {
+            onOK();
         }
     }
 

@@ -29,10 +29,11 @@ public final class Utility {
     private VariabeleTable variabeletable = null;
 
     private static final Utility utility = new Utility();
+    private static boolean gestart = false;     // is applicatie gestart (ivm. tonen variabele venster)?
 
     private Utility()
     {
-        System.err.println( "Utility object created." );
+//        System.err.println( "Utility object created." );
     }
 
     public static Utility getInstance()
@@ -96,6 +97,14 @@ public final class Utility {
         return db;
     }
 
+    public static boolean isGestart() {
+        return gestart;
+    }
+
+    public static void setGestart(boolean gestart) {
+        Utility.gestart = gestart;
+    }
+
     /**
      * Vul de categorie combobox
      * @param combo
@@ -132,9 +141,9 @@ public final class Utility {
      * @param titel
      * @param text
      */
-    void vulTekst(Titel titel, JTextArea text){
+    void vulTekst(Titel titel, JTextArea text, boolean vraagVariabele){
         String tekst = db.leesTekstById(titel.getId());
-        text.setText(parseQuery(tekst));
+        text.setText(parseQuery(tekst, vraagVariabele));
     }
 
 
@@ -171,7 +180,7 @@ public final class Utility {
      * @param tekst
      * @return
      */
-    String parseQuery(String tekst) {
+    String parseQuery(String tekst, boolean vraagWaarde) {
         // 'set @' eruit, behalve als er een (select ...) op volgt
         tekst = tekst.replaceAll("(?i)" + "set @[^;(]+;\\n", "");
         String waarde = "";
@@ -194,7 +203,8 @@ public final class Utility {
         }
 
         // Ontbrekende variabelen of variabelen zonder waarde laten invullen
-        if (toegevoegd) {
+        // TODO niet tijdens laden van het programma
+        if (vraagWaarde) {
             toonVariabeleTable();
         }
 
@@ -278,18 +288,21 @@ public final class Utility {
 
     /**
      * Toon de tabel met variabelen
+     * (onderdruk tijdens starten applicatie)
      */
      void toonVariabeleTable() {
-        if (variabeletable == null) {
-            variabeletable = new VariabeleTable();
-            variabeletable.setPreferredSize(new Dimension(300,300));
-            variabeletable.pack();
-        } else {
-            variabeletable.vulData();
-        }
+        if (isGestart()) {
+            if (variabeletable == null) {
+                variabeletable = new VariabeleTable();
+                variabeletable.setPreferredSize(new Dimension(300,300));
+                variabeletable.pack();
+            } else {
+                variabeletable.vulData();
+            }
 
-        variabeletable.setVisible(true);
-        variabeletable.toFront();
+            variabeletable.setVisible(true);
+            variabeletable.toFront();
+        }
     }
 
 
