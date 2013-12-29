@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -38,7 +39,8 @@ public class OnderhoudsForm {
         util.vulTitels(cmbCategorie.getItemAt(0).toString(), cmbTitel);
 
         // om een of andere reden is het object niet zichtbaar als dit vanuuit de designer wordt gedaan
-        cmbCategorie.setEditable(true);
+        cmbCategorie.setEditable(false);
+        cmbTitel.setEditable(false);
 
         // Vul de velden
         stelVeldenIn(categorie, titel, tekst);
@@ -47,39 +49,53 @@ public class OnderhoudsForm {
         cmbCategorie.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if (cmbTitel.getSelectedIndex() == -1) {
-                    newCategorie = cmbCategorie.getSelectedItem().toString();
-                } else {
-                    String categorie = null;
-                    if (cmbCategorie.getSelectedItem() != null) {
-                        categorie = cmbCategorie.getSelectedItem().toString();
+                if (cmbCategorie.getItemCount()>0) {        // onderdruk als lijst gewist wordt
+                    if (cmbCategorie.getSelectedIndex() == -1) {
+                        newCategorie = cmbCategorie.getSelectedItem().toString();
                     } else {
-                        categorie = cmbCategorie.getItemAt(0).toString();
+                        String categorie = null;
+                        if (cmbCategorie.getSelectedItem() != null) {
+                            categorie = cmbCategorie.getSelectedItem().toString();
+                        } else {
+                            categorie = cmbCategorie.getItemAt(0).toString();
+                        }
+                        newCategorie = categorie;
                     }
-                    newCategorie = categorie;
+                    util.vulTitels(newCategorie, cmbTitel);
+                    Titel titel = (Titel) cmbTitel.getItemAt(0);
+                    newTitel = titel.getTitel();
+                    newId = newId != -1 ? titel.getId() : -1;
+
+                    Window w = SwingUtilities.getWindowAncestor(mainPanel);
+                    JFrame frame = (JFrame) w;
+                    frame.setTitle("Query " + newId);
+
+                    util.vulTekst(titel, txtQuery, false);
                 }
-                util.vulTitels(newCategorie, cmbTitel);
-                Titel titel = (Titel) cmbTitel.getItemAt(0);
-                newTitel = titel.getTitel();
-                newId = titel.getId();
-                util.vulTekst(titel, txtQuery, false);
             }
-        });
+                        });
         cmbTitel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if (cmbTitel.getSelectedIndex() == -1) {
-                    newTitel = cmbTitel.getSelectedItem().toString();
-                } else {
-                    Titel titel = null;
-                    if (cmbTitel.getSelectedItem() != null) {
-                        titel = (Titel) cmbTitel.getSelectedItem();
+                if (cmbCategorie.getItemCount()>0) {        // onderdruk als lijst gewist wordt
+                    if (cmbTitel.getSelectedIndex() == -1) {
+                        newTitel = cmbTitel.getSelectedItem().toString();
                     } else {
-                        titel = (Titel) cmbTitel.getItemAt(0);
+                        Titel titel = null;
+                        if (cmbTitel.getSelectedItem() != null) {
+                            titel = (Titel) cmbTitel.getSelectedItem();
+                        } else {
+                            titel = (Titel) cmbTitel.getItemAt(0);
+                        }
+                        newTitel = titel.getTitel();
+                        newId = newId != -1 ? titel.getId() : -1;
+
+                        Window w = SwingUtilities.getWindowAncestor(mainPanel);
+                        JFrame frame = (JFrame) w;
+                        frame.setTitle("Query " + newId);
+
+                        util.vulTekst(titel, txtQuery, false);
                     }
-                    newTitel = titel.getTitel();
-                    newId = titel.getId();
-                    util.vulTekst(titel, txtQuery, false);
                 }
             }
         });
@@ -104,12 +120,20 @@ public class OnderhoudsForm {
                     if (newId == -1) {
                         util.getLog().info("Query toevoegen: " + titel.getTitel());
                         Query query = new Query(newCategorie, newTitel, txtQuery.getText());
-                        util.getDb().schrijfQuery(query);
+                        newId = util.getDb().insertQuery(query);
+                        cmbCategorie.setEditable(false);
+                        cmbTitel.setEditable(false);
                     } else {
                         util.getLog().info("Query wijzigen: " + titel.getId() + " - " + titel.getTitel());
                         util.getDb().wijzigQueryTekst(titel, txtQuery.getText());
                     }
-                    // TODO categorie combobox in QueryForm verversen
+                    // Bijwerken comboboxen
+                    titel = util.leesTitel(newId);
+                    util.verversCombo(cmbCategorie, cmbTitel, titel);
+                    cmbCategorie.setSelectedItem(newCategorie);
+                    cmbTitel.setSelectedItem(titel.getTitel());
+                    util.vulPlainTekst(titel, txtQuery);
+
                 }
             }
         });
@@ -126,9 +150,11 @@ public class OnderhoudsForm {
                 Titel titel = (Titel) cmbTitel.getSelectedItem();
                 String msg = "Je gaat de query met id " + titel.getId() + " verwijderen. Doorgaan ?";
                 if (JOptionPane.showConfirmDialog(null, msg, "Bevestig keuze", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    int index = cmbTitel.getSelectedIndex();
                     util.getDb().verwijderQueryTekst(titel);
                     util.getLog().info("Query verwijderen: " + titel.getId() + " - " + titel.getTitel());
-                    // TODO categorie combobox in QueryForm verversen
+                    index =  index < cmbTitel.getItemCount() ? index : index - 1;
+                    util.verversCombo(cmbCategorie, cmbTitel, null);
                 }
             }
         });
@@ -137,6 +163,14 @@ public class OnderhoudsForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 txtQuery.setText("");
                 newId = -1;
+
+                Window w = SwingUtilities.getWindowAncestor(mainPanel);
+                JFrame frame = (JFrame) w;
+                frame.setTitle("Query " + newId);
+
+                cmbCategorie.setEditable(true);
+                cmbTitel.setEditable(true);
+
             }
         });
         btnLezen.addActionListener(new ActionListener() {
@@ -161,5 +195,12 @@ public class OnderhoudsForm {
         cmbTitel.getModel().setSelectedItem(titel);
         txtQuery.setText(tekst);
         newId = titel.getId();
+
+//        if (mainPanel.isVisible()) {
+//            Window w = SwingUtilities.getWindowAncestor(mainPanel);
+//            JFrame frame = (JFrame) w;
+//            frame.setTitle("Query " + newId);
+//        }
     }
+
 }

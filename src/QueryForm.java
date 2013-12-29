@@ -79,6 +79,13 @@ public class QueryForm {
     private Map<String, String> info = null;
 
 //TODO menu voor bestandsactie
+//TODO onderhoudsvenster: toon de id (in de titel?)
+//TODO onderhoudsvenster - nieuw: probleem met Titel naar string (opgelost?)
+//TODO onderhoudsvenster - nieuw: categorie is soms null
+//TODO onderhoudsvenster - wijzigen: toevoegen van veld (@apotheek_agb) dat leeg in variabelevenster staat, lukt niet altijd. Wordt dan leeg getoond. (opgelost?)
+//TODO variabelevenster - invullen laatste veld, dan <enter> -> waarde wordt niet bewaard? (opgelost)
+//TODO onderhoudsvenster - (meermaals) wijzigen controleren
+//TODO onderhoudsvenster - juiste titel en tekst tonen na toevoegen en verwijderen
 
     public QueryForm() {
         // Dialoogvenster voor wijzigen en toevoegen variabelen
@@ -218,13 +225,16 @@ public class QueryForm {
                     onderhoudsFrame.setContentPane(onderhoudsform.mainPanel);
                     onderhoudsFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
                     onderhoudsFrame.setLocation(100, 100);
+                    onderhoudsFrame.setTitle("Query: " + selectedTitel.getId());
                     onderhoudsFrame.pack();
                     onderhoudsFrame.setVisible(true);
                 } else if (!onderhoudsFrame.isShowing()) {      // hidden
                     onderhoudsform.stelVeldenIn(selectedCategorie, selectedTitel, txtTekst.getText());
+                    onderhoudsFrame.setTitle("Query: " + selectedTitel.getId());
                     onderhoudsFrame.setVisible(true);
                 } else {                                        // heeft geen focus
                     onderhoudsform.stelVeldenIn(selectedCategorie, selectedTitel, txtTekst.getText());
+                    onderhoudsFrame.setTitle("Query: " + selectedTitel.getId());
                     onderhoudsFrame.toFront();
                 }
 
@@ -372,7 +382,7 @@ public class QueryForm {
                 if(mat.find()) {
                     if (query != null && tekst != null && tekst.length() > 0) {
                         query.setTekst(tekst.toString());
-                        util.getDb().schrijfQuery(query);
+                        util.getDb().insertQuery(query);
                     }
                     categorie = mat.group(1);
                     query = new Query(categorie);
@@ -384,7 +394,7 @@ public class QueryForm {
                     if(mat.find()) {
                         if (query != null && tekst.length() > 0) {
                             query.setTekst(tekst.toString());
-                            util.getDb().schrijfQuery(query);
+                            util.getDb().insertQuery(query);
                         }
                         titel = mat.group(1);
                         info.put(titel, categorie);

@@ -106,6 +106,26 @@ public final class Utility {
     }
 
     /**
+     * Ververs de comboboxen na wijzigingen
+     * @param categorie
+     * @param titel
+     * @param titelObj
+     */
+    void verversCombo(JComboBox categorie, JComboBox titel, Titel titelObj) {
+        vulCategorien(categorie);
+        if (categorie.getSelectedItem() != null) {
+            if (titelObj != null) {
+                vulTitels(categorie.getSelectedItem().toString(), titel, titelObj);
+            } else {
+                vulTitels(categorie.getItemAt(0).toString(), titel);
+            }
+        } else {
+            vulTitels(categorie.getItemAt(0).toString(), titel);
+        }
+
+    }
+
+    /**
      * Vul de categorie combobox
      * @param combo
      */
@@ -118,7 +138,8 @@ public final class Utility {
                 combo.addItem(categorie);
             }
         }
-        if (index >= 0) {
+        // Selecteer juiste entry (-1 = nieuw toegevoegd)
+        if (index != -1) {
             index = (index > combo.getItemCount()-1) ? combo.getItemCount()-1 : index;
             combo.setSelectedIndex(index);
         }
@@ -134,6 +155,18 @@ public final class Utility {
         DefaultComboBoxModel mod=new DefaultComboBoxModel(titels.toArray());
         combo.setModel(mod);
 
+    }
+
+    /**
+     * Vul de titels combobox ahv. de categorie en selecteer een entry
+     * @param categorie
+     * @param combo
+     * @param titel
+     */
+    void vulTitels(String categorie, JComboBox combo, Titel titel) {
+        vulTitels(categorie, combo);
+        //TODO toont juiste index nog niet
+        combo.setSelectedItem(titel.getTitel());
     }
 
     /**
@@ -157,13 +190,29 @@ public final class Utility {
         text.setText(tekst);
     }
 
+    /**
+     * Lees titel object ahv. de id (nodig bij toevoegen record)
+     * @param id
+     * @return
+     */
+    Titel leesTitel(int id) {
+        Titel result = null;
+        try {
+            return db.leesTitelById(id);
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return result;
+
+    }
+
 
     /**
      * Lees de categorien uit de database
      * @return
      */
     ArrayList<String> leesCategorienDb() {
-        return db.leesCategorien();
+        return db.leesCategorieen();
     }
 
     /**
@@ -195,7 +244,7 @@ public final class Utility {
                 varlijst.add(new Variabele(naam, ""));
                 toegevoegd = true;
             } else {
-                if (varlijst.get(naam) == "") {     // toon ook als waarde niet is ingevuld
+                if (varlijst.get(naam).equals("")) {     // toon ook als waarde niet is ingevuld
                     toegevoegd = true;
                 }
             }
@@ -203,8 +252,7 @@ public final class Utility {
         }
 
         // Ontbrekende variabelen of variabelen zonder waarde laten invullen
-        // TODO niet tijdens laden van het programma
-        if (vraagWaarde) {
+        if (vraagWaarde && toegevoegd) {
             toonVariabeleTable();
         }
 
@@ -213,7 +261,7 @@ public final class Utility {
         while (mat.find(start)) {
             String naam = mat.group(1);
             waarde = varlijst.get(naam);
-            if (waarde != "") {
+            if (!waarde.equals("")) {
                 tekst = tekst.replace("@" + naam, waarde);
             }
             start = mat.toMatchResult().end(1);

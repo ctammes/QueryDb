@@ -88,18 +88,32 @@ public class QueryDb extends Sqlite {
 
     }
 
-    public ResultSet leesQueryId(Long id) {
+    /**
+     * Lees een query ahv. de id
+     * @param id
+     * @return
+     */
+    public ResultSet leesQueryById(Integer id) {
         String sql = "select * from query" +
-                " where id = " + Long.toString(id);
-        return execute(sql);
+                " where id = " + Integer.toString(id);
+        try {
+            return execute(sql);
+        } catch(Exception e) {
+            System.out.println(e.getMessage() + " - " + sql);
+            return null;
+        }
     }
 
-    public ArrayList<String> leesCategorien() {
+    /**
+     * Lees alle categorieen
+     * @return
+     */
+    public ArrayList<String> leesCategorieen() {
         String sql = "select distinct categorie from query order by categorie";
-        ResultSet rst = execute(sql);
 
         TreeSet<String> result = new TreeSet<String>();
         try {
+            ResultSet rst = execute(sql);
             while (rst.next()) {
                 result.add(rst.getString("categorie"));
             }
@@ -110,11 +124,17 @@ public class QueryDb extends Sqlite {
         return new ArrayList<String>(result);
     }
 
+    /**
+     * Lees alle titels bij een bepaalde categorie
+     * @param categorie
+     * @return
+     */
     public ArrayList<Object> leesTitels(String categorie) {
         ArrayList<Object> items = new ArrayList<Object>();
         String sql = "select id, titel from query where categorie='" + categorie.replaceAll("'", "''") + "'";
-        ResultSet rst = execute(sql);
+
         try {
+            ResultSet rst = execute(sql);
             int i = 0;
             while (rst.next()) {
                 items.add(new Titel(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
@@ -125,11 +145,40 @@ public class QueryDb extends Sqlite {
         return items;
     }
 
+    /**
+     * Geef een titel object ahv. de id
+     * @param id
+     * @return
+     */
+    public Titel leesTitelById(Integer id) {
+        String sql = "select titel from query where id=" + id ;
+
+        Titel result = null;
+        try {
+            ResultSet rst = execute(sql);
+            while (rst.next()) {
+                result = new Titel(id, rst.getString("titel"));
+            }
+        } catch(Exception e) {
+            System.out.println(e.getMessage() + " - " + sql);
+        }
+
+        return result;
+
+    }
+
+
+    /**
+     * Zoek titels met een bepaalde tekst in de titel
+     * @param sleutel
+     * @return
+     */
     public Object[] zoekTitels(String sleutel) {
         Object[] items = new Titel[50];
         String sql = "select id, titel from query where titel like '%" +  sleutel + "%'";
-        ResultSet rst = execute(sql);
+
         try {
+            ResultSet rst = execute(sql);
             int i = 0;
             while (rst.next()) {
                 items[i++] = (new Titel(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
@@ -140,12 +189,19 @@ public class QueryDb extends Sqlite {
         return items;
     }
 
+    /**
+     * Lees de tekst bij een categorie en titel
+     * (een titel kan bij neer dan een categorie voorkomen!)
+     * @param categorie
+     * @param titel
+     * @return
+     */
     public String leesTekst(String categorie, String titel) {
         String sql = "select tekst from query where categorie='" + categorie.replaceAll("'", "''") + "' and titel = '" + titel.replaceAll("'", "''") + "'";
-        ResultSet rst = execute(sql);
 
         String result = "";
         try {
+            ResultSet rst = execute(sql);
             while (rst.next()) {
                 result = rst.getString("tekst");
             }
@@ -156,12 +212,17 @@ public class QueryDb extends Sqlite {
         return result;
     }
 
+    /**
+     * Lees de tekst bij een bepaalde id
+     * @param id
+     * @return
+     */
     public String leesTekstById(Integer id) {
         String sql = "select tekst from query where id=" + id ;
-        ResultSet rst = execute(sql);
 
         String result = "";
         try {
+            ResultSet rst = execute(sql);
             while (rst.next()) {
                 result = rst.getString("tekst");
             }
@@ -173,7 +234,12 @@ public class QueryDb extends Sqlite {
 
     }
 
-    public boolean schrijfQuery(Query query) {
+    /**
+     * Voeg een nieuw record toe
+     * @param query
+     * @return id van laatst toegevoegde record
+     */
+    public Integer insertQuery(Query query) {
 
         String categorie = query.getCategorie().replaceAll("'", "''");
         String titel = query.getTitel().replaceAll("'", "''");
@@ -185,10 +251,12 @@ public class QueryDb extends Sqlite {
                 " values (" + values + ")";
         try {
             executeNoResult(sql);
-            return true;
+            sql = "select last_insert_rowid() last_id from query limit 1";
+            ResultSet rs = execute(sql);
+            return rs.getInt("last_id");
         } catch(Exception e) {
             System.out.println(e.getMessage() + " - " + sql);
-            return false;
+            return -1;
         }
 
     }
@@ -215,7 +283,7 @@ public class QueryDb extends Sqlite {
     }
 
     /**
-     * Verwijder een query
+     * Verwijder een query (id is onderdeel van Titel object)
      * @param titel
      * @return
      */
@@ -233,5 +301,18 @@ public class QueryDb extends Sqlite {
 
     }
 
+    /**
+     * Geeft de hoogste id terug (na insert)
+     * @return
+     */
+    public int getMaxId() {
+        try {
+            return getMax("query", "id");
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+            return -1;
+        }
+
+    }
 
 }

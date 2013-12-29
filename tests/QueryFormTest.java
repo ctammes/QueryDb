@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.sql.ResultSet;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,7 +56,7 @@ public class QueryFormTest {
                 if(mat.find()) {
                     if (query != null && tekst != null && tekst.length() > 0) {
                         query.setTekst(tekst.toString());
-                        db.schrijfQuery(query);
+                        db.insertQuery(query);
                     }
                     System.out.println("tekst1: " + tekst + "\n");
                     categorie = mat.group(1);
@@ -74,7 +75,7 @@ public class QueryFormTest {
                     if(mat.find()) {
                         if (query != null && tekst.length() > 0) {
                             query.setTekst(tekst.toString());
-                            db.schrijfQuery(query);
+                            db.insertQuery(query);
                         }
                         System.out.println("tekst2: " + tekst + "\n");
                         titel = mat.group(1);
@@ -89,7 +90,7 @@ public class QueryFormTest {
                     } else {
                         if (query != null && tekst != null && tekst.length() > 0) {
                             query.setTekst(tekst.toString());
-                            db.schrijfQuery(query);
+                            db.insertQuery(query);
                         }
                     }
                 }
@@ -264,4 +265,23 @@ public class QueryFormTest {
         return result;
     }
 
+    @Test
+    public void testLastInsertId() {
+        QueryDb db = new QueryDb("/home/chris/IdeaProjects/java/QueryDb", "QueryDb.db");
+        System.out.printf("max: %s\n", db.getMaxId());
+        String sql = "insert into query " +
+                "(categorie, titel, tekst) " +
+                "values('test_max', 'test_max', 'test last_insert_id');";
+        try {
+            db.executeNoResult(sql);
+            sql = "select last_insert_rowid() last_id from query limit 1";
+            ResultSet rs = db.execute(sql);
+            System.out.println(rs.getInt("last_id"));
+            sql = "delete from where categorie = 'test_max');";
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+
+    }
 }
