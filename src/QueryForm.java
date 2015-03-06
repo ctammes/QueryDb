@@ -213,7 +213,11 @@ public class QueryForm {
         btnklembord.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                tekstNaarKlembord(txtTekst.getText());
+                String tekst = txtTekst.getSelectedText();
+                if (tekst == null) {
+                    tekst = txtTekst.getText();
+                }
+                tekstNaarKlembord(tekst);
             }
         });
         btnOnderhoud.addActionListener(new ActionListener() {
