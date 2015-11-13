@@ -1,3 +1,4 @@
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -21,6 +22,7 @@ public class OnderhoudsForm {
     private JButton btnNieuw;
     private JButton btnVerwijderen;
     private JButton btnLezen;
+    private JTextField txtTaal;
 
     // Utility functies enzo
     Utility util;
@@ -33,7 +35,7 @@ public class OnderhoudsForm {
 
     // TODO wat doen bij selectie Categorie? Titels ook aanpassen??
 
-    public OnderhoudsForm(String categorie, Titel titel, String tekst) {
+    public OnderhoudsForm(String categorie, Titel titel, String tekst, final Taal taal) {
         util = Utility.getInstance();
         util.vulCategorien(cmbCategorie);
         util.vulTitels(cmbCategorie.getItemAt(0).toString(), cmbTitel);
@@ -43,7 +45,7 @@ public class OnderhoudsForm {
         cmbTitel.setEditable(false);
 
         // Vul de velden
-        stelVeldenIn(categorie, titel, tekst);
+        stelVeldenIn(categorie, titel, tekst, taal);
         newId = titel.getId();
 
         cmbCategorie.addActionListener(new ActionListener() {
@@ -119,7 +121,7 @@ public class OnderhoudsForm {
                 if (JOptionPane.showConfirmDialog(null, msg, "Bevestig keuze", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     if (newId == -1) {
                         util.getLog().info("Query toevoegen: " + titel.getTitel());
-                        Query query = new Query(newCategorie, newTitel, txtQuery.getText());
+                        Query query = new Query(newCategorie, newTitel, txtQuery.getText(), taal.getId());
                         newId = util.getDb().insertQuery(query);
                         cmbCategorie.setEditable(false);
                         cmbTitel.setEditable(false);
@@ -188,13 +190,14 @@ public class OnderhoudsForm {
      * @param titel
      * @param tekst
      */
-    protected void stelVeldenIn(String categorie, Titel titel, String tekst) {
+    protected void stelVeldenIn(String categorie, Titel titel, String tekst, Taal taal) {
         cmbCategorie.setSelectedItem(categorie);
         util.vulTitels(categorie, cmbTitel);
         // let op: getModel() ertussen, anders werkt het niet!
         cmbTitel.getModel().setSelectedItem(titel);
         txtQuery.setText(tekst);
         newId = titel.getId();
+        txtTaal.setText(taal.getTaal());
 
 //        if (mainPanel.isVisible()) {
 //            Window w = SwingUtilities.getWindowAncestor(mainPanel);

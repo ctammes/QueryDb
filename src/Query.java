@@ -10,6 +10,7 @@ public class Query {
     private String categorie;
     private String titel;
     private String tekst;
+    private Integer taal;
 
     public String getCategorie() {
         return categorie;
@@ -35,13 +36,18 @@ public class Query {
         this.tekst = tekst;
     }
 
+    public Integer getTaal() { return taal; }
+
+    public void setTaal(Integer taal) { this.taal = taal; }
+
     public Query(String categorie) {
         this.categorie = categorie;
     }
 
-    public Query(String categorie, String titel, String tekst) {
+    public Query(String categorie, String titel, String tekst, Integer taal) {
         this.categorie = categorie;
         this.titel = titel;
         this.tekst = tekst;
+        this.taal = taal;
     }
 }

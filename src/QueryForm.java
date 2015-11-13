@@ -28,9 +28,9 @@ public class QueryForm {
     private JTextArea txtTekst;
     private JComboBox cmbCategorie;
     private JComboBox cmbTitel;
+    private JComboBox cmbTaal;
 
     private JFrame onderhoudsFrame;
-
     private JTextField txtFilenaam;
     private JButton btnVerwerk;
     private JPanel mainPanel;
@@ -68,6 +68,7 @@ public class QueryForm {
 
     private String selectedCategorie;
     private Titel selectedTitel;
+    private Taal selectedTaal;
     private Integer queryId;
 
     // te vervangen variabelen
@@ -104,6 +105,8 @@ public class QueryForm {
         selectedCategorie = cmbCategorie.getItemAt(0).toString();
         util.vulTitels(selectedCategorie, cmbTitel);
         selectedTitel = (Titel) cmbTitel.getItemAt(0);
+        util.vulTalen(cmbTaal);
+        selectedTaal = (Taal) cmbTaal.getItemAt(0);
         //TODO ???
 //        Titel titel = selectedTitel;
         util.vulTekst(selectedTitel, txtTekst, util.isGestart());
@@ -225,7 +228,7 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (onderhoudsFrame == null){                   // initialisatie
                     onderhoudsFrame = new JFrame("OnderhoudsForm");
-                    onderhoudsform = new OnderhoudsForm(selectedCategorie, selectedTitel, txtTekst.getText());
+                    onderhoudsform = new OnderhoudsForm(selectedCategorie, selectedTitel, txtTekst.getText(), selectedTaal);
                     onderhoudsFrame.setContentPane(onderhoudsform.mainPanel);
                     onderhoudsFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
                     onderhoudsFrame.setLocation(100, 100);
@@ -233,11 +236,11 @@ public class QueryForm {
                     onderhoudsFrame.pack();
                     onderhoudsFrame.setVisible(true);
                 } else if (!onderhoudsFrame.isShowing()) {      // hidden
-                    onderhoudsform.stelVeldenIn(selectedCategorie, selectedTitel, txtTekst.getText());
+                    onderhoudsform.stelVeldenIn(selectedCategorie, selectedTitel, txtTekst.getText(), selectedTaal);
                     onderhoudsFrame.setTitle("Query: " + selectedTitel.getId());
                     onderhoudsFrame.setVisible(true);
                 } else {                                        // heeft geen focus
-                    onderhoudsform.stelVeldenIn(selectedCategorie, selectedTitel, txtTekst.getText());
+                    onderhoudsform.stelVeldenIn(selectedCategorie, selectedTitel, txtTekst.getText(), selectedTaal);
                     onderhoudsFrame.setTitle("Query: " + selectedTitel.getId());
                     onderhoudsFrame.toFront();
                 }

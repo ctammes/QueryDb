@@ -126,6 +126,16 @@ public final class Utility {
     }
 
     /**
+     * Vul de talen combobox
+     * @param combo
+     */
+    void vulTalen(JComboBox combo) {
+        ArrayList<Object> talen = leesTalenDb();
+        DefaultComboBoxModel mod=new DefaultComboBoxModel(talen.toArray());
+        combo.setModel(mod);
+    }
+
+    /**
      * Vul de categorie combobox
      * @param combo
      */
@@ -222,6 +232,14 @@ public final class Utility {
      */
     ArrayList<Object> leesTitelsDb(String categorie) {
         return db.leesTitels(categorie);
+    }
+
+    /**
+     * Lees de talen uit de database
+     * @return
+     */
+    ArrayList<Object> leesTalenDb() {
+        return db.leesTalen();
     }
 
     /**

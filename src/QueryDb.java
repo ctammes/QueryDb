@@ -18,6 +18,8 @@ public class QueryDb extends Sqlite {
     private String titel;
     private String tekst;
 
+    private Integer taal;
+
     public Integer getId() {
         return id;
     }
@@ -50,6 +52,10 @@ public class QueryDb extends Sqlite {
         this.tekst = tekst;
     }
 
+    public Integer getTaal() { return taal; }
+
+    public void setTaal(Integer taal) { this.taal = taal; }
+
     public QueryDb(String dir, String db) {
         super(dir, db);
         openDb();
@@ -69,7 +75,8 @@ public class QueryDb extends Sqlite {
                 "    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
                 "    categorie TEXT NOT NULL," +
                 "    titel TEXT NOT NULL," +
-                "    tekst TEXT NOT NULL" +
+                "    tekst TEXT NOT NULL," +
+                "    taal INTEGER NULL" +
                 ");";
         return executeNoResult(sql);
     }
@@ -122,6 +129,26 @@ public class QueryDb extends Sqlite {
         }
 
         return new ArrayList<String>(result);
+    }
+
+    /**
+     * Lees alle talen
+     * @return
+     */
+    public ArrayList<Object> leesTalen() {
+        ArrayList<Object> items = new ArrayList<Object>();
+        String sql = "select id, taal from taal";
+
+        try {
+            ResultSet rst = execute(sql);
+            int i = 0;
+            while (rst.next()) {
+                items.add(new Taal(Integer.parseInt(rst.getString("id")), rst.getString("taal")));
+            }
+        } catch(Exception e) {
+            System.out.println(e.getMessage() + " - " + sql);
+        }
+        return items;
     }
 
     /**
@@ -244,10 +271,11 @@ public class QueryDb extends Sqlite {
         String categorie = query.getCategorie().replaceAll("'", "''");
         String titel = query.getTitel().replaceAll("'", "''");
         String tekst = query.getTekst().replaceAll("'", "''");
-        String values = String.format("'%s', '%s', '%s'",
-                categorie, titel, tekst);
+        Integer taal = query.getTaal();
+        String values = String.format("'%s', '%s', '%s', %d",
+                categorie, titel, tekst, taal);
         String sql = "insert into query" +
-                " (categorie, titel, tekst)" +
+                " (categorie, titel, tekst, taal)" +
                 " values (" + values + ")";
         try {
             executeNoResult(sql);
