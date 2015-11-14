@@ -108,19 +108,20 @@ public final class Utility {
     /**
      * Ververs de comboboxen na wijzigingen
      * @param categorie
+     * @param combo
+     * @param taal
      * @param titel
-     * @param titelObj
      */
-    void verversCombo(JComboBox categorie, JComboBox titel, Titel titelObj) {
-        vulCategorien(categorie);
+    void verversCombo(JComboBox categorie, JComboBox combo, Taal taal, Titel titel) {
+        vulCategorien(categorie, taal);
         if (categorie.getSelectedItem() != null) {
-            if (titelObj != null) {
-                vulTitels(categorie.getSelectedItem().toString(), titel, titelObj);
+            if (titel != null) {
+                vulTitels(categorie.getSelectedItem().toString(), combo, taal, titel);
             } else {
-                vulTitels(categorie.getItemAt(0).toString(), titel);
+                vulTitels(categorie.getItemAt(0).toString(), combo, taal);
             }
         } else {
-            vulTitels(categorie.getItemAt(0).toString(), titel);
+            vulTitels(categorie.getItemAt(0).toString(), combo, taal);
         }
 
     }
@@ -138,10 +139,11 @@ public final class Utility {
     /**
      * Vul de categorie combobox
      * @param combo
+     * @param taal
      */
-    void vulCategorien(JComboBox combo) {
+    void vulCategorien(JComboBox combo, Taal taal) {
         int index = combo.getSelectedIndex();
-        ArrayList<String> categorien = leesCategorienDb();
+        ArrayList<String> categorien = leesCategorienDb(taal);
         combo.removeAllItems();
         for (String categorie: categorien) {
             if (categorie.trim() != "" ) {
@@ -159,22 +161,26 @@ public final class Utility {
      * Vul de titels combobox ahv. de categorie
      * @param categorie
      * @param combo
+     * @param taal
      */
-    void vulTitels(String categorie, JComboBox combo) {
-        ArrayList<Object> titels = leesTitelsDb(categorie);
-        DefaultComboBoxModel mod=new DefaultComboBoxModel(titels.toArray());
-        combo.setModel(mod);
-
+    void vulTitels(String categorie, JComboBox combo, Taal taal) {
+        combo.removeAllItems();
+        if (categorie != null) {
+            ArrayList<Object> titels = leesTitelsDb(categorie, taal);
+            DefaultComboBoxModel mod = new DefaultComboBoxModel(titels.toArray());
+            combo.setModel(mod);
+        }
     }
 
     /**
      * Vul de titels combobox ahv. de categorie en selecteer een entry
      * @param categorie
      * @param combo
+     * @param taal
      * @param titel
      */
-    void vulTitels(String categorie, JComboBox combo, Titel titel) {
-        vulTitels(categorie, combo);
+    void vulTitels(String categorie, JComboBox combo, Taal taal, Titel titel) {
+        vulTitels(categorie, combo, taal);
         //TODO toont juiste index nog niet
         combo.setSelectedItem(titel.getTitel());
     }
@@ -185,8 +191,12 @@ public final class Utility {
      * @param text
      */
     void vulTekst(Titel titel, JTextArea text, boolean vraagVariabele){
-        String tekst = db.leesTekstById(titel.getId());
-        text.setText(parseQuery(tekst, vraagVariabele));
+        if (titel != null) {
+            String tekst = db.leesTekstById(titel.getId());
+            text.setText(parseQuery(tekst, vraagVariabele));
+        } else {
+            text.setText("");
+        }
     }
 
 
@@ -196,8 +206,12 @@ public final class Utility {
      * @param text
      */
     void vulPlainTekst(Titel titel, JTextArea text){
-        String tekst = db.leesTekstById(titel.getId());
-        text.setText(tekst);
+        if (titel != null) {
+            String tekst = db.leesTekstById(titel.getId());
+            text.setText(tekst);
+        } else {
+            text.setText("");
+        }
     }
 
     /**
@@ -221,8 +235,8 @@ public final class Utility {
      * Lees de categorien uit de database
      * @return
      */
-    ArrayList<String> leesCategorienDb() {
-        return db.leesCategorieen();
+    ArrayList<String> leesCategorienDb(Taal taal) {
+        return db.leesCategorieen(taal);
     }
 
     /**
@@ -230,8 +244,8 @@ public final class Utility {
      * @param categorie
      * @return
      */
-    ArrayList<Object> leesTitelsDb(String categorie) {
-        return db.leesTitels(categorie);
+    ArrayList<Object> leesTitelsDb(String categorie, Taal taal) {
+        return db.leesTitels(categorie, taal);
     }
 
     /**

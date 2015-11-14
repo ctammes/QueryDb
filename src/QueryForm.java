@@ -46,7 +46,7 @@ public class QueryForm {
     private JTextField txtZoekTitel;
     private JButton btnZoekTitel;
     private JButton btnVervers;
-    private JButton btnklembord;
+    private JButton btnKlembord;
     private JButton btnOnderhoud;
     private JButton btnVariabelen;
     private JTextField txtDuur;
@@ -101,12 +101,9 @@ public class QueryForm {
         doAction("txtdatum");
 
         // Vullen van de comboboxen vanuit de database
-        util.vulCategorien(cmbCategorie);
-        selectedCategorie = cmbCategorie.getItemAt(0).toString();
-        util.vulTitels(selectedCategorie, cmbTitel);
-        selectedTitel = (Titel) cmbTitel.getItemAt(0);
         util.vulTalen(cmbTaal);
-        selectedTaal = (Taal) cmbTaal.getItemAt(0);
+        selectedTaal = (Taal) cmbTaal.getItemAt(3);
+        updateCombo();
         //TODO ???
 //        Titel titel = selectedTitel;
         util.vulTekst(selectedTitel, txtTekst, util.isGestart());
@@ -124,7 +121,7 @@ public class QueryForm {
                         JOptionPane.showMessageDialog(null, tekst, "Info", JOptionPane.INFORMATION_MESSAGE);
                         util.getLog().info(tekst);
                     } else {
-                        util.vulCategorien(cmbCategorie);
+                        util.vulCategorien(cmbCategorie, selectedTaal);
                     }
                 }
             }
@@ -152,6 +149,23 @@ public class QueryForm {
             }
         });
 
+        cmbTaal.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (cmbTaal.getItemCount() > 0) {        // onderdruk als lijst gewist wordt
+                    Taal taal = null;
+                    if (cmbTaal.getSelectedItem() != null) {
+                        taal = (Taal) cmbTaal.getSelectedItem();
+                    } else {
+                        taal = (Taal) cmbTaal.getItemAt(0);
+                    }
+                    selectedTaal = taal;
+                    updateCombo();
+                    System.out.println(selectedTaal.getTaal());
+//                    util.vulTekst(titel, txtTekst, util.isGestart());
+                }
+            }
+        });
         cmbCategorie.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -163,14 +177,13 @@ public class QueryForm {
                         categorie = cmbCategorie.getItemAt(0).toString();
                     }
                     selectedCategorie = categorie;
-                    util.vulTitels(categorie, cmbTitel);
+                    util.vulTitels(categorie, cmbTitel, selectedTaal);
                     Titel titel = (Titel) cmbTitel.getItemAt(0);
                     selectedTitel = titel;
                     util.vulTekst(titel, txtTekst, util.isGestart());
                 }
             }
         });
-
         cmbTitel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -190,7 +203,7 @@ public class QueryForm {
         btnLeesDb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                util.vulCategorien(cmbCategorie);
+                util.vulCategorien(cmbCategorie, selectedTaal);
             }
         });
 
@@ -213,7 +226,7 @@ public class QueryForm {
                 tekstNaarKlembord(tekst);
             }
         });
-        btnklembord.addActionListener(new ActionListener() {
+        btnKlembord.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 String tekst = txtTekst.getSelectedText();
@@ -232,7 +245,11 @@ public class QueryForm {
                     onderhoudsFrame.setContentPane(onderhoudsform.mainPanel);
                     onderhoudsFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
                     onderhoudsFrame.setLocation(100, 100);
-                    onderhoudsFrame.setTitle("Query: " + selectedTitel.getId());
+                    Integer titel = -1;
+                    if (selectedTitel != null) {
+                        titel = selectedTitel.getId();
+                    }
+                    onderhoudsFrame.setTitle("Query: " + titel);
                     onderhoudsFrame.pack();
                     onderhoudsFrame.setVisible(true);
                 } else if (!onderhoudsFrame.isShowing()) {      // hidden
@@ -353,6 +370,23 @@ public class QueryForm {
     }
 
     /**
+     * Bijwerken van de comboboxen als de taal gewijzigd is
+     */
+    private void updateCombo() {
+        txtTekst.setText("");
+        util.vulCategorien(cmbCategorie, selectedTaal);
+        selectedCategorie = null;
+        selectedTitel = null;
+        if (cmbCategorie.getModel().getSize() > 0) {
+            selectedCategorie = cmbCategorie.getItemAt(0).toString();
+        }
+        util.vulTitels(selectedCategorie, cmbTitel, selectedTaal);
+        if (cmbTitel.getModel().getSize() > 0) {
+            selectedTitel = (Titel) cmbTitel.getItemAt(0);
+        }
+    }
+
+    /**
      * Actie gekoppeld aan een tekstveld
      * @param naam
      */
@@ -435,7 +469,7 @@ public class QueryForm {
      * @return
      */
     private Object[] zoekTitelsDb(String sleutel) {
-        return util.getDb().zoekTitels(sleutel);
+        return util.getDb().zoekTitels(sleutel, selectedTaal);
     }
 
     /**

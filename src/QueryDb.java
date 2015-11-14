@@ -17,7 +17,6 @@ public class QueryDb extends Sqlite {
     private String categorie;
     private String titel;
     private String tekst;
-
     private Integer taal;
 
     public Integer getId() {
@@ -113,10 +112,13 @@ public class QueryDb extends Sqlite {
 
     /**
      * Lees alle categorieen
+     * @param taal
      * @return
      */
-    public ArrayList<String> leesCategorieen() {
-        String sql = "select distinct categorie from query order by categorie";
+    public ArrayList<String> leesCategorieen(Taal taal) {
+        String sql = "select distinct categorie from query" +
+                " where taal = " + taal.getId() +
+                " order by categorie";
 
         TreeSet<String> result = new TreeSet<String>();
         try {
@@ -154,11 +156,14 @@ public class QueryDb extends Sqlite {
     /**
      * Lees alle titels bij een bepaalde categorie
      * @param categorie
+     * @param taal
      * @return
      */
-    public ArrayList<Object> leesTitels(String categorie) {
+    public ArrayList<Object> leesTitels(String categorie, Taal taal) {
         ArrayList<Object> items = new ArrayList<Object>();
-        String sql = "select id, titel from query where categorie='" + categorie.replaceAll("'", "''") + "'";
+        String sql = "select id, titel from query" +
+                " where categorie='" + categorie.replaceAll("'", "''") + "'" +
+                " and taal = " + taal.getId();
 
         try {
             ResultSet rst = execute(sql);
@@ -197,12 +202,14 @@ public class QueryDb extends Sqlite {
 
     /**
      * Zoek titels met een bepaalde tekst in de titel
+     * @param taal
      * @param sleutel
      * @return
      */
-    public Object[] zoekTitels(String sleutel) {
+    public Object[] zoekTitels(String sleutel, Taal taal) {
         Object[] items = new Titel[50];
-        String sql = "select id, titel from query where titel like '%" +  sleutel + "%'";
+        String sql = "select id, titel from query where titel like '%" +  sleutel + "%'" +
+                " and taal = " + taal.getId();
 
         try {
             ResultSet rst = execute(sql);
@@ -223,8 +230,11 @@ public class QueryDb extends Sqlite {
      * @param titel
      * @return
      */
-    public String leesTekst(String categorie, String titel) {
-        String sql = "select tekst from query where categorie='" + categorie.replaceAll("'", "''") + "' and titel = '" + titel.replaceAll("'", "''") + "'";
+    public String leesTekst(String categorie, String titel, Taal taal) {
+        String sql = "select tekst from query " +
+                " where categorie='" + categorie.replaceAll("'", "''") +
+                "' and titel = '" + titel.replaceAll("'", "''") + "'" +
+                " and taal = " + taal.getId();
 
         String result = "";
         try {
