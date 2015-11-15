@@ -52,6 +52,11 @@ public class QueryForm {
     private JTextField txtDuur;
     private JTextField txtCcvId;
 
+    private JMenuBar mnuBar1;
+    private JMenu mnuBestanden;
+    private JMenuItem mnuRefresh;
+    private JMenuItem mnuAfsluiten;
+
     private static MijnIni ini = null;
     private static String inifile = "QueryDb.ini";
     private static String queryFile = "/home/chris/scripts/snippets/SQL-queries";
@@ -59,12 +64,15 @@ public class QueryForm {
     private static String dbDir = "/home/chris/IdeaProjects/java/QueryDb";
     private static String dbNaam = "QueryDb.db";
 
+    private static JFrame frame = new JFrame("Snippets");
+
 //    protected static QueryDb db = null;
 //    private static Utility util = new Utility();
 
     static Utility util;
 
     private OnderhoudsForm onderhoudsform = null;
+    private VariabeleTable variabeleTable = null;
 
     private String selectedCategorie;
     private Titel selectedTitel;
@@ -104,6 +112,42 @@ public class QueryForm {
         //TODO ???
 //        Titel titel = selectedTitel;
         util.vulTekst(selectedTitel, txtTekst, util.isGestart());
+
+        // Sneltoetsen
+        btnZoekTitel.setMnemonic('z');          // Alt-Z
+        btnOnderhoud.setMnemonic('o');          // Alt-O
+        btnKlembord.setMnemonic('k');           // Alt-K
+        btnVariabelen.setMnemonic('v');         // Alt-V
+        btnVervers.setMnemonic('e');            // Alt-E
+        txtTekst.setFocusAccelerator('q');      // Alt-Q
+        txtZoekTitel.setFocusAccelerator('t');  // Alt-T
+
+        // Menu samenstellen
+        mnuBar1 = new javax.swing.JMenuBar();
+        mnuBestanden = new javax.swing.JMenu();
+        mnuAfsluiten = new javax.swing.JMenuItem();
+        mnuRefresh = new javax.swing.JMenuItem();
+        mnuBestanden.setText("Bestanden");
+        mnuBestanden.setMnemonic('b');
+        mnuRefresh.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        mnuRefresh.setText("Refresh");
+        mnuRefresh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuRefreshActionPerformed(evt);
+            }
+        });
+        mnuBestanden.add(mnuRefresh);
+        mnuAfsluiten.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
+        mnuAfsluiten.setText("Afsluiten");
+        mnuAfsluiten.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuAfsluitenActionPerformed(evt);
+            }
+        });
+        mnuBestanden.add(mnuAfsluiten);
+
+        mnuBar1.add(mnuBestanden);
+        frame.setJMenuBar(mnuBar1);
 
         btnVerwerk.addActionListener(new ActionListener() {
             @Override
@@ -215,8 +259,12 @@ public class QueryForm {
                 String sleutel = txtZoekTitel.getText();
                 if (sleutel.length() > 0) {
                     Object[] titels = zoekTitelsDb(sleutel);
-                    DefaultComboBoxModel mod=new DefaultComboBoxModel(titels);
-                    cmbTitel.setModel(mod);
+                    if (titels.length > 0) {
+                        DefaultComboBoxModel mod = new DefaultComboBoxModel(titels);
+                        cmbTitel.setModel(mod);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Geen resultaten gevonden", "Informatie", JOptionPane.INFORMATION_MESSAGE);
+                    }
                 }
             }
         });
@@ -273,7 +321,8 @@ public class QueryForm {
         btnVariabelen.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                util.toonVariabeleTable();
+//                util.toonVariabeleTable();
+                doVariabeleAction();
             }
         });
 
@@ -404,6 +453,26 @@ public class QueryForm {
 
     }
 
+    private void doVariabeleAction() {
+        if (util.isGestart()) {
+            if (variabeleTable == null) {
+                variabeleTable = new VariabeleTable();
+
+                Window w = SwingUtilities.getWindowAncestor(mainPanel);
+                variabeleTable.setLocation(w.getX() + 200, w.getY() + 200);
+
+                variabeleTable.setPreferredSize(new Dimension(300,300));
+                variabeleTable.pack();
+            } else {
+                variabeleTable.vulData();
+            }
+
+            variabeleTable.setVisible(true);
+            variabeleTable.toFront();
+        }
+
+    }
+
     /**
      * Doorloop querybestand en sla categorie/titel op
      */
@@ -466,6 +535,22 @@ public class QueryForm {
             util.getLog().severe(e.getMessage());
         }
 
+    }
+
+    private void mnuRefreshActionPerformed(ActionEvent evt) {
+        //TODO op een of andere manier de oorspronkelijke keuzes weer tonen; worden nu gereset
+        util.vulTalen(cmbTaal);
+        cmbTaal.getModel().setSelectedItem(selectedTaal);
+
+        cmbCategorie.getModel().setSelectedItem(selectedCategorie);
+        cmbTitel.getModel().setSelectedItem(selectedTitel);
+    }
+
+    private void mnuAfsluitenActionPerformed(ActionEvent evt) {
+        // TODO close action en afsluiten gelijktrekken. zie http://tips4java.wordpress.com/2009/05/01/closing-an-application/
+        // TODO project stoppen bij afsluiten??
+
+        System.exit(0);
     }
 
     /**
@@ -570,7 +655,6 @@ public class QueryForm {
         }
         util.setDb(new QueryDb(dbDir, dbNaam));
 
-        JFrame frame = new JFrame("Snippets");
         frame.setContentPane(new QueryForm().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocation(200,200);

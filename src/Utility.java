@@ -388,6 +388,7 @@ public final class Utility {
     }
 
     /**
+     * Obsolete
      * Toon de tabel met variabelen
      * (onderdruk tijdens starten applicatie)
      */

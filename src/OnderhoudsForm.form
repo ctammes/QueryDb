@@ -65,6 +65,7 @@
                 <constraints/>
                 <properties>
                   <text value=""/>
+                  <toolTipText value="[Alt-Q] Voer hier de tekst in, evt. met variabelen (vb. @zoekdatum)"/>
                 </properties>
               </component>
             </children>

@@ -59,6 +59,7 @@ public class QueryDb extends Sqlite {
         super(dir, db);
         openDb();
         createQuery();
+        createTaal();
     }
 
     public void sluitDb() {
@@ -66,7 +67,7 @@ public class QueryDb extends Sqlite {
     }
 
     /**
-     * Maak nieuwe database
+     * Maak nieuwe Query database
      * @return
      */
     public boolean createQuery() {
@@ -76,6 +77,18 @@ public class QueryDb extends Sqlite {
                 "    titel TEXT NOT NULL," +
                 "    tekst TEXT NOT NULL," +
                 "    taal INTEGER NULL" +
+                ");";
+        return executeNoResult(sql);
+    }
+
+    /**
+     * Maak nieuwe Taal database
+     * @return
+     */
+    public boolean createTaal() {
+        String sql = "CREATE TABLE IF NOT EXISTS taal (" +
+                "  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                "  taal TEXT NOT NULL"+
                 ");";
         return executeNoResult(sql);
     }
@@ -204,10 +217,11 @@ public class QueryDb extends Sqlite {
      * Zoek titels met een bepaalde tekst in de titel
      * @param taal
      * @param sleutel
-     * @return
+     * @return array met resultaten
      */
     public Object[] zoekTitels(String sleutel, Taal taal) {
         Object[] items = new Titel[50];
+        Object[] result = null;
         String sql = "select id, titel from query where titel like '%" +  sleutel + "%'" +
                 " and taal = " + taal.getId();
 
@@ -217,10 +231,12 @@ public class QueryDb extends Sqlite {
             while (rst.next()) {
                 items[i++] = (new Titel(Integer.parseInt(rst.getString("id")), rst.getString("titel")));
             }
+            result = new Titel[i];
+            java.lang.System.arraycopy(items, 0, result, 0, i);
         } catch(Exception e) {
             System.out.println(e.getMessage() + " - " + sql);
         }
-        return items;
+        return result;
     }
 
     /**

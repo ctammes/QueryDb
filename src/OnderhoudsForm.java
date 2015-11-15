@@ -47,6 +47,14 @@ public class OnderhoudsForm {
         // Vul de velden met de inhoud uit het vorige venster
         stelVeldenIn(categorie, titel, tekst, taal);
 
+        // Sneltoetsen
+        btnNieuw.setMnemonic('n');
+        btnOpslaan.setMnemonic('s');
+        btnCancel.setMnemonic('a');
+        btnVerwijderen.setMnemonic('w');
+        btnLezen.setMnemonic('l');
+        txtQuery.setFocusAccelerator('q');
+
         cmbTaal.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
