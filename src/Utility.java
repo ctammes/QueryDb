@@ -114,14 +114,14 @@ public final class Utility {
      */
     void verversCombo(JComboBox categorie, JComboBox combo, Taal taal, Titel titel) {
         vulCategorien(categorie, taal);
-        if (categorie.getSelectedItem() != null) {
+        if (categorie.getModel().getSelectedItem() != null) {
             if (titel != null) {
-                vulTitels(categorie.getSelectedItem().toString(), combo, taal, titel);
+                vulTitels(categorie.getModel().getSelectedItem().toString(), combo, taal, titel);
             } else {
-                vulTitels(categorie.getItemAt(0).toString(), combo, taal);
+                vulTitels(categorie.getModel().getSelectedItem().toString(), combo, taal);
             }
         } else {
-            vulTitels(categorie.getItemAt(0).toString(), combo, taal);
+            vulTitels(categorie.getModel().getSelectedItem().toString(), combo, taal);
         }
 
     }
@@ -144,12 +144,15 @@ public final class Utility {
     void vulCategorien(JComboBox combo, Taal taal) {
         int index = combo.getSelectedIndex();
         ArrayList<String> categorien = leesCategorienDb(taal);
-        combo.removeAllItems();
-        for (String categorie: categorien) {
-            if (categorie.trim() != "" ) {
-                combo.addItem(categorie);
-            }
-        }
+        DefaultComboBoxModel mod = new DefaultComboBoxModel(categorien.toArray());
+        combo.setModel(mod);
+
+//        combo.removeAllItems();
+//        for (String categorie: categorien) {
+//            if (categorie.trim() != "" ) {
+//                combo.addItem(categorie);
+//            }
+//        }
         // Selecteer juiste entry (-1 = nieuw toegevoegd)
         if (index != -1) {
             index = (index > combo.getItemCount()-1) ? combo.getItemCount()-1 : index;
@@ -217,7 +220,7 @@ public final class Utility {
     /**
      * Lees titel object ahv. de id (nodig bij toevoegen record)
      * @param id
-     * @return
+     * @return Titel object
      */
     Titel leesTitel(int id) {
         Titel result = null;
@@ -228,6 +231,24 @@ public final class Utility {
         }
         return result;
 
+    }
+
+    /**
+     * Voeg een nieuw taalrecord toe aan de database
+     * @param taal
+     * @return id van nieuwe record
+     */
+    Integer insertTaalDb(String taal) {
+        return db.insertTaal(taal);
+    }
+
+    /**
+     * Voeg een nieuw queryrecord toe aan de database
+     * @param query
+     * @return id van nieuwe record
+     */
+    Integer insertQueryDb(Query query) {
+        return db.insertQuery(query);
     }
 
 
@@ -374,6 +395,7 @@ public final class Utility {
         if (isGestart()) {
             if (variabeletable == null) {
                 variabeletable = new VariabeleTable();
+                variabeletable.setLocation(200, 200);
                 variabeletable.setPreferredSize(new Dimension(300,300));
                 variabeletable.pack();
             } else {

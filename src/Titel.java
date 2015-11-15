@@ -6,7 +6,7 @@
  * To change this template use File | Settings | File Templates.
  */
 public class Titel {
-    private Integer id;
+    private Integer id;     // Id van het query record
     private String titel;
 
     public Integer getId() {

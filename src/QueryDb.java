@@ -272,7 +272,7 @@ public class QueryDb extends Sqlite {
     }
 
     /**
-     * Voeg een nieuw record toe
+     * Voeg een nieuw Query record toe
      * @param query
      * @return id van laatst toegevoegde record
      */
@@ -290,6 +290,30 @@ public class QueryDb extends Sqlite {
         try {
             executeNoResult(sql);
             sql = "select last_insert_rowid() last_id from query limit 1";
+            ResultSet rs = execute(sql);
+            return rs.getInt("last_id");
+        } catch(Exception e) {
+            System.out.println(e.getMessage() + " - " + sql);
+            return -1;
+        }
+
+    }
+
+    /**
+     * Voeg een nieuw Taal record toe
+     * @param taal
+     * @return id van laatst toegevoegde record
+     */
+    public Integer insertTaal(String taal) {
+
+        String values = String.format("'%s'",
+                taal);
+        String sql = "insert into taal" +
+                " (taal)" +
+                " values (" + values + ")";
+        try {
+            executeNoResult(sql);
+            sql = "select last_insert_rowid() last_id from taal limit 1";
             ResultSet rs = execute(sql);
             return rs.getInt("last_id");
         } catch(Exception e) {

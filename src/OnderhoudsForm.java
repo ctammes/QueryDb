@@ -31,8 +31,7 @@ public class OnderhoudsForm {
     private int newId = 0;
     private String newCategorie = null;
     private String newTitel = null;
-    private String newTaal = null;
-    private Taal selectedTaal;
+    private Taal selectedTaal = null;
     private HashMap<String, String> variabelen;
 
     // TODO wat doen bij selectie Categorie? Titels ook aanpassen??
@@ -41,30 +40,35 @@ public class OnderhoudsForm {
         util = Utility.getInstance();
         util.vulTalen(cmbTaal);
         selectedTaal = (Taal) taal;
-        util.vulCategorien(cmbCategorie, selectedTaal);
-        if (cmbCategorie.getModel().getSize() > 0) {
-            util.vulTitels(cmbCategorie.getItemAt(0).toString(), cmbTitel, selectedTaal);
-        }
 
         // om een of andere reden is het object niet zichtbaar als dit vanuuit de designer wordt gedaan
-        cmbCategorie.setEditable(false);
-        cmbTitel.setEditable(false);
+        comboEditable(false);
 
-        // Vul de velden
+        // Vul de velden met de inhoud uit het vorige venster
         stelVeldenIn(categorie, titel, tekst, taal);
 
         cmbTaal.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if (cmbTaal.getItemCount() > 0) {        // onderdruk als lijst gewist wordt
+                if (cmbTaal.getModel().getSelectedItem() != null) {        // onderdruk als lijst gewist wordt
                     Taal taal = null;
-                    if (cmbTaal.getSelectedItem() != null) {
-                        taal = (Taal) cmbTaal.getSelectedItem();
+                    if (cmbTaal.getModel().getSelectedItem() instanceof Taal) {
+                        if (cmbTaal.getModel().getSelectedItem() != null) {
+                            taal = (Taal) cmbTaal.getModel().getSelectedItem();
+                        } else {
+                            taal = (Taal) cmbTaal.getItemAt(0);
+                        }
                     } else {
-                        taal = (Taal) cmbTaal.getItemAt(0);
+                        // Nieuwe taal toegevoegd
+                        taal = new Taal(-1, cmbTaal.getModel().getSelectedItem().toString());
                     }
                     selectedTaal = taal;
-                    System.out.println(selectedTaal.getTaal());
+
+                    cmbCategorie.removeAllItems();
+                    cmbTitel.removeAllItems();
+                    txtQuery.setText("");
+//                    util.vulCategorien(cmbCategorie, selectedTaal);
+                    updateCombo();
 //                    util.vulTekst(titel, txtTekst, util.isGestart());
                 }
             }
@@ -72,27 +76,37 @@ public class OnderhoudsForm {
         cmbCategorie.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if (cmbCategorie.getItemCount()>0 || newId == -1) {        // onderdruk als lijst gewist wordt
-                    if (cmbCategorie.getSelectedIndex() == -1) {
-                        newCategorie = cmbCategorie.getSelectedItem().toString();
-                    } else {
-                        String categorie = null;
-                        if (cmbCategorie.getSelectedItem() != null) {
-                            categorie = cmbCategorie.getSelectedItem().toString();
-                        } else {
-                            categorie = cmbCategorie.getItemAt(0).toString();
-                        }
-                        newCategorie = categorie;
+                if (cmbCategorie.getModel().getSelectedItem() != null) {        // onderdruk als lijst gewist wordt
+                    String categorie = null;
+                    if (cmbCategorie.getModel().getSelectedItem() instanceof String) {
+                        categorie = cmbCategorie.getModel().getSelectedItem().toString();
                     }
+                    newCategorie = categorie;
+                    newId = newId != -1 ? cmbCategorie.getSelectedIndex() : -1;
+
+
+
+//                    if (cmbCategorie.getSelectedIndex() == -1) {
+//                        newCategorie = (cmbCategorie.getSelectedItem() != null) ? cmbCategorie.getSelectedItem().toString() : "";
+//                    } else {
+//                        String categorie = null;
+//                        if (cmbCategorie.getSelectedItem() != null) {
+//                            categorie = cmbCategorie.getSelectedItem().toString();
+//                        } else {
+//                            categorie = cmbCategorie.getItemAt(0).toString();
+//                        }
+//                        newCategorie = categorie;
+//                    }
+
+                    cmbTitel.removeAllItems();
+                    txtQuery.setText("");
                     util.vulTitels(newCategorie, cmbTitel, selectedTaal);
                     if (cmbTitel.getModel().getSize() > 0) {
                         Titel titel = (Titel) cmbTitel.getItemAt(0);
                         newTitel = titel.getTitel();
                         newId = newId != -1 ? titel.getId() : -1;
 
-                        Window w = SwingUtilities.getWindowAncestor(mainPanel);
-                        JFrame frame = (JFrame) w;
-                        frame.setTitle("Query " + newId);
+                        toonTitel(newId);
 
                         util.vulTekst(titel, txtQuery, false);
                     }
@@ -102,25 +116,37 @@ public class OnderhoudsForm {
         cmbTitel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if (cmbCategorie.getItemCount()>0 || newId == -1) {        // onderdruk als lijst gewist wordt
-                    if (cmbTitel.getSelectedIndex() == -1) {
-                        newTitel = cmbTitel.getSelectedItem().toString();
-                    } else {
-                        Titel titel = null;
-                        if (cmbTitel.getSelectedItem() != null) {
-                            titel = (Titel) cmbTitel.getSelectedItem();
-                        } else {
-                            titel = (Titel) cmbTitel.getItemAt(0);
-                        }
-                        newTitel = titel.getTitel();
-                        newId = newId != -1 ? titel.getId() : -1;
-
-                        Window w = SwingUtilities.getWindowAncestor(mainPanel);
-                        JFrame frame = (JFrame) w;
-                        frame.setTitle("Query " + newId);
-
-                        util.vulTekst(titel, txtQuery, false);
+                if (cmbTitel.getModel().getSelectedItem() != null) {        // onderdruk als lijst gewist wordt
+                    Titel titel = null;
+                    if (cmbTitel.getModel().getSelectedItem() instanceof String) {
+                        titel = new Titel(-1, cmbTitel.getModel().getSelectedItem().toString());
+                    } else if (cmbTitel.getModel().getSelectedItem() instanceof Titel) {
+                        titel = (Titel) cmbTitel.getModel().getSelectedItem();
                     }
+                    newId = titel.getId();
+                    newTitel = titel.getTitel();
+
+                    toonTitel(newId);
+
+//                    if (cmbTitel.getSelectedIndex() == -1) {
+//                        newTitel = (cmbTitel.getSelectedItem() != null) ? cmbTitel.getSelectedItem().toString() : "";
+//                    } else {
+//                        Titel titel = null;
+//                        if (cmbTitel.getSelectedItem() != null) {
+//                            titel = (Titel) cmbTitel.getSelectedItem();
+//                        } else {
+//                            titel = (Titel) cmbTitel.getItemAt(0);
+//                        }
+//                        newTitel = titel.getTitel();
+//                        newId = newId != -1 ? titel.getId() : -1;
+//
+//                        Window w = SwingUtilities.getWindowAncestor(mainPanel);
+//                        JFrame frame = (JFrame) w;
+//                        frame.setTitle("Query " + newId);
+//
+//                        txtQuery.setText("");
+//                        util.vulTekst(titel, txtQuery, false);
+//                    }
                 }
             }
         });
@@ -129,12 +155,19 @@ public class OnderhoudsForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 Titel titel = null;
                 String msg = null;
+                Integer taalId = 0;
+
+                // Nieuwe taal?
+                if (selectedTaal.getId() == -1) {
+                    taalId = util.insertTaalDb(selectedTaal.getTaal());
+                } else {
+                    taalId = selectedTaal.getId();
+                }
+
                 if (newId == -1) {
-                    // TODO op nieuwe taal controleren
-                    System.out.println(bestaatTaal(cmbTaal.getModel().getSelectedItem().toString()));
-                    if (newCategorie != "" && newTitel != "" && txtQuery.getText() != "") {
+                    if (newCategorie != "" && newCategorie != null && newTitel != "" && newTitel != null && txtQuery.getText() != "") {
                         titel = new Titel(newId, newTitel);
-                        msg = "<html>Er wordt een nieuwe query gemaakt: <br>taal: " + ((newTaal != null) ? newTaal : selectedTaal.getTaal()) + "<br>categorie: " + newCategorie + "<br>titel: " + newTitel + ".<br> Doorgaan ?<html>";
+                        msg = "<html>Er wordt een nieuwe query gemaakt: <br>taal: " + selectedTaal.getTaal() + "<br>categorie: " + newCategorie + "<br>titel: " + newTitel + ".<br> Doorgaan ?<html>";
                     } else {
                         JOptionPane.showMessageDialog(null, "Niet alle velden ingevuld!", "Waarschuwing", JOptionPane.WARNING_MESSAGE);
                         return;
@@ -146,10 +179,10 @@ public class OnderhoudsForm {
                 if (JOptionPane.showConfirmDialog(null, msg, "Bevestig keuze", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     if (newId == -1) {
                         util.getLog().info("Query toevoegen: " + titel.getTitel());
-                        Query query = new Query(newCategorie, newTitel, txtQuery.getText(), taal.getId());
-                        newId = util.getDb().insertQuery(query);
-                        cmbCategorie.setEditable(false);
-                        cmbTitel.setEditable(false);
+                        Query query = new Query(newCategorie, newTitel, txtQuery.getText(), taalId);
+                        newId = util.insertQueryDb(query);
+
+                        comboEditable(false);
                     } else {
                         util.getLog().info("Query wijzigen: " + titel.getId() + " - " + titel.getTitel());
                         util.getDb().wijzigQueryTekst(titel, txtQuery.getText());
@@ -168,6 +201,7 @@ public class OnderhoudsForm {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JOptionPane.showMessageDialog(null, "Gegevens wijzigen afgebroken", "info", JOptionPane.INFORMATION_MESSAGE);
+                comboEditable(false);
                 // TODO iets doen met newId, die kan -1 zijn
             }
         });
@@ -188,15 +222,16 @@ public class OnderhoudsForm {
         btnNieuw.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                txtQuery.setText("");
                 newId = -1;
+                toonTitel(newId);
 
-                Window w = SwingUtilities.getWindowAncestor(mainPanel);
-                JFrame frame = (JFrame) w;
-                frame.setTitle("Query " + newId);
+                cmbTitel.getModel().setSelectedItem("");
+                txtQuery.setText("");
 
-                cmbCategorie.setEditable(true);
-                cmbTitel.setEditable(true);
+                newCategorie = cmbCategorie.getModel().getSelectedItem().toString();
+                newTitel = cmbTitel.getModel().getSelectedItem().toString();
+
+                comboEditable(true);
 
             }
         });
@@ -210,38 +245,61 @@ public class OnderhoudsForm {
     }
 
     /**
+     * Bijwerken van de comboboxen als de taal gewijzigd is
+     */
+    private void updateCombo() {
+        util.vulCategorien(cmbCategorie, selectedTaal);
+        if (cmbCategorie.getModel().getSize() > 0) {
+            util.vulTitels(cmbCategorie.getModel().getSelectedItem().toString(), cmbTitel, selectedTaal);
+            txtQuery.setText("");
+            if (cmbTitel.getModel().getSize() > 0) {
+                util.vulTekst((Titel) cmbTitel.getModel().getSelectedItem(), txtQuery, false);
+            }
+        }
+
+    }
+
+    /**
+     * Maak de comboboxen (un)editable
+      * @param status
+     */
+    private void comboEditable(boolean status) {
+        cmbTaal.setEditable(status);
+        cmbCategorie.setEditable(status);
+        cmbTitel.setEditable(status);
+    }
+
+    /**
+     * Toon de id in de titelbalk
+     * @param id
+     */
+    private void toonTitel(Integer id) {
+        Window w = SwingUtilities.getWindowAncestor(mainPanel);
+        JFrame frame = (JFrame) w;
+        frame.setTitle("Query " + (id == -1 ? "nieuw" : id));
+    }
+
+    /**
      * Vul velden (bij instantiation vanuit hoofdscherm)
      * @param categorie
      * @param titel
      * @param tekst
      */
     protected void stelVeldenIn(String categorie, Titel titel, String tekst, Taal taal) {
-        cmbCategorie.setSelectedItem(categorie);
-        util.vulTitels(categorie, cmbTitel, taal);
+        util.vulTalen(cmbTaal);
         // let op: getModel() ertussen, anders werkt het niet!
+        cmbTaal.getModel().setSelectedItem(taal);
+        cmbCategorie.getModel().setSelectedItem(categorie);
+//        util.vulTitels(categorie, cmbTitel, taal);
         cmbTitel.getModel().setSelectedItem(titel);
         txtQuery.setText(tekst);
         newId = (titel != null) ? newId = titel.getId() : -1;
-        util.vulTalen(cmbTaal);
-        cmbTaal.getModel().setSelectedItem(taal);
 
 //        if (mainPanel.isVisible()) {
 //            Window w = SwingUtilities.getWindowAncestor(mainPanel);
 //            JFrame frame = (JFrame) w;
 //            frame.setTitle("Query " + newId);
 //        }
-    }
-
-    protected boolean bestaatTaal(String taal) {
-        boolean result = false;
-        for (int i = 0; i < cmbTaal.getModel().getSize(); i++) {
-            if (cmbTaal.getItemAt(i).toString() == taal) {
-                result = true;
-                break;
-            }
-        }
-        return result;
-
     }
 
 }

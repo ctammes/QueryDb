@@ -80,11 +80,8 @@ public class QueryForm {
     private Map<String, String> info = null;
 
 //TODO menu voor bestandsactie
-//TODO onderhoudsvenster: toon de id (in de titel?)
-//TODO onderhoudsvenster - nieuw: probleem met Titel naar string (opgelost?)
 //TODO onderhoudsvenster - nieuw: categorie is soms null
 //TODO onderhoudsvenster - wijzigen: toevoegen van veld (@apotheek_agb) dat leeg in variabelevenster staat, lukt niet altijd. Wordt dan leeg getoond. (opgelost?)
-//TODO variabelevenster - invullen laatste veld, dan <enter> -> waarde wordt niet bewaard? (opgelost)
 //TODO onderhoudsvenster - (meermaals) wijzigen controleren
 //TODO onderhoudsvenster - juiste titel en tekst tonen na toevoegen en verwijderen
 
@@ -102,7 +99,7 @@ public class QueryForm {
 
         // Vullen van de comboboxen vanuit de database
         util.vulTalen(cmbTaal);
-        selectedTaal = (Taal) cmbTaal.getItemAt(3);
+        selectedTaal = (Taal) cmbTaal.getItemAt(0);
         updateCombo();
         //TODO ???
 //        Titel titel = selectedTitel;
@@ -155,14 +152,12 @@ public class QueryForm {
                 if (cmbTaal.getItemCount() > 0) {        // onderdruk als lijst gewist wordt
                     Taal taal = null;
                     if (cmbTaal.getSelectedItem() != null) {
-                        taal = (Taal) cmbTaal.getSelectedItem();
+                        taal = (Taal) cmbTaal.getModel().getSelectedItem();
                     } else {
                         taal = (Taal) cmbTaal.getItemAt(0);
                     }
                     selectedTaal = taal;
                     updateCombo();
-                    System.out.println(selectedTaal.getTaal());
-//                    util.vulTekst(titel, txtTekst, util.isGestart());
                 }
             }
         });
@@ -172,11 +167,12 @@ public class QueryForm {
                 if (cmbCategorie.getItemCount()>0) {        // onderdruk als lijst gewist wordt
                     String categorie = null;
                     if (cmbCategorie.getSelectedItem() != null) {
-                        categorie = cmbCategorie.getSelectedItem().toString();
+                        categorie = cmbCategorie.getModel().getSelectedItem().toString();
                     } else {
                         categorie = cmbCategorie.getItemAt(0).toString();
                     }
                     selectedCategorie = categorie;
+
                     util.vulTitels(categorie, cmbTitel, selectedTaal);
                     Titel titel = (Titel) cmbTitel.getItemAt(0);
                     selectedTitel = titel;
@@ -190,7 +186,7 @@ public class QueryForm {
                 if (cmbTitel.getItemCount() > 0) {        // onderdruk als lijst gewist wordt
                     Titel titel = null;
                     if (cmbTitel.getSelectedItem() != null) {
-                        titel = (Titel) cmbTitel.getSelectedItem();
+                        titel = (Titel) cmbTitel.getModel().getSelectedItem();
                     } else {
                         titel = (Titel) cmbTitel.getItemAt(0);
                     }
@@ -203,7 +199,13 @@ public class QueryForm {
         btnLeesDb.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                util.vulCategorien(cmbCategorie, selectedTaal);
+                //TODO op een of andere manier de oorspronkelijke keuzes weer tonen; worden nu gereset
+                util.vulTalen(cmbTaal);
+                cmbTaal.getModel().setSelectedItem(selectedTaal);
+
+                cmbCategorie.getModel().setSelectedItem(selectedCategorie);
+                cmbTitel.getModel().setSelectedItem(selectedTitel);
+
             }
         });
 
@@ -244,7 +246,10 @@ public class QueryForm {
                     onderhoudsform = new OnderhoudsForm(selectedCategorie, selectedTitel, txtTekst.getText(), selectedTaal);
                     onderhoudsFrame.setContentPane(onderhoudsform.mainPanel);
                     onderhoudsFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-                    onderhoudsFrame.setLocation(100, 100);
+
+                    Window w = SwingUtilities.getWindowAncestor(mainPanel);
+                    onderhoudsFrame.setLocation(w.getX() + 100, w.getY() + 100);
+
                     Integer titel = -1;
                     if (selectedTitel != null) {
                         titel = selectedTitel.getId();
@@ -565,10 +570,10 @@ public class QueryForm {
         }
         util.setDb(new QueryDb(dbDir, dbNaam));
 
-        JFrame frame = new JFrame("QueryForm");
+        JFrame frame = new JFrame("Snippets");
         frame.setContentPane(new QueryForm().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocation(100,100);
+        frame.setLocation(200,200);
         frame.pack();
         frame.setVisible(true);
 
