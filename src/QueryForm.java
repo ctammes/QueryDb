@@ -72,7 +72,6 @@ public class QueryForm {
     static Utility util;
 
     private OnderhoudsForm onderhoudsform = null;
-    private VariabeleTable variabeleTable = null;
 
     private String selectedCategorie;
     private Titel selectedTitel;
@@ -95,9 +94,9 @@ public class QueryForm {
 
     public QueryForm() {
         // Dialoogvenster voor wijzigen en toevoegen variabelen
-        util.getVariabeledialog().pack();
-        util.getVariabeledialog().setModal(true);
-        util.getVariabeledialog().setVisible(false);
+        util.getVariabeleDialog().pack();
+        util.getVariabeleDialog().setModal(true);
+        util.getVariabeleDialog().setVisible(false);
 
         // Initialisatie van het scherm
         txtFilenaam.setText(queryFile);
@@ -453,24 +452,12 @@ public class QueryForm {
 
     }
 
+    /**
+     * Toon invulscherm voor variabelen
+     */
     private void doVariabeleAction() {
-        if (util.isGestart()) {
-            if (variabeleTable == null) {
-                variabeleTable = new VariabeleTable();
-
-                Window w = SwingUtilities.getWindowAncestor(mainPanel);
-                variabeleTable.setLocation(w.getX() + 200, w.getY() + 200);
-
-                variabeleTable.setPreferredSize(new Dimension(300,300));
-                variabeleTable.pack();
-            } else {
-                variabeleTable.vulData();
-            }
-
-            variabeleTable.setVisible(true);
-            variabeleTable.toFront();
-        }
-
+        Window w = SwingUtilities.getWindowAncestor(mainPanel);
+        util.toonVariabeleTable(w.getLocation());
     }
 
     /**
@@ -549,7 +536,8 @@ public class QueryForm {
     private void mnuAfsluitenActionPerformed(ActionEvent evt) {
         // TODO close action en afsluiten gelijktrekken. zie http://tips4java.wordpress.com/2009/05/01/closing-an-application/
         // TODO project stoppen bij afsluiten??
-
+        ini = new MijnIni(inifile);
+        ini.schrijf("Diversen", "PosQueryDb", String.format("%d,%d",frame.getX(), frame.getY()));
         System.exit(0);
     }
 
@@ -657,7 +645,8 @@ public class QueryForm {
 
         frame.setContentPane(new QueryForm().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocation(200,200);
+        String[] pos = ini.lees(" Diversen", "PosQueryDb", "200,200").split(",");
+        frame.setLocation(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
         frame.pack();
         frame.setVisible(true);
 

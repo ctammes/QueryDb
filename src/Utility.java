@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.xml.stream.Location;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -25,8 +26,8 @@ public final class Utility {
     // Initialiseer logger
     private Logger log = Logger.getLogger(QueryForm.class.getName());
 
-    private VariabeleDialog variabeledialog = new VariabeleDialog();
-    private VariabeleTable variabeletable = null;
+    private VariabeleDialog variabeleDialog = new VariabeleDialog();
+    private VariabeleTable variabeleTable = null;
 
     private static final Utility utility = new Utility();
     private static boolean gestart = false;     // is applicatie gestart (ivm. tonen variabele venster)?
@@ -87,7 +88,7 @@ public final class Utility {
         this.log = log;
     }
 
-    VariabeleDialog getVariabeledialog() { return variabeledialog; };
+    VariabeleDialog getVariabeleDialog() { return variabeleDialog; };
 
     void setDb(QueryDb db) {
         this.db = db;
@@ -185,7 +186,7 @@ public final class Utility {
     void vulTitels(String categorie, JComboBox combo, Taal taal, Titel titel) {
         vulTitels(categorie, combo, taal);
         //TODO toont juiste index nog niet
-        combo.setSelectedItem(titel.getTitel());
+        combo.getModel().setSelectedItem(titel.getTitel());
     }
 
     /**
@@ -306,7 +307,7 @@ public final class Utility {
 
         // Ontbrekende variabelen of variabelen zonder waarde laten invullen
         if (vraagWaarde && toegevoegd) {
-            toonVariabeleTable();
+            toonVariabeleTable(null);
         }
 
         // Variabelen vervolgens vervangen
@@ -392,19 +393,21 @@ public final class Utility {
      * Toon de tabel met variabelen
      * (onderdruk tijdens starten applicatie)
      */
-     void toonVariabeleTable() {
+     void toonVariabeleTable(Point pnt) {
         if (isGestart()) {
-            if (variabeletable == null) {
-                variabeletable = new VariabeleTable();
-                variabeletable.setLocation(200, 200);
-                variabeletable.setPreferredSize(new Dimension(300,300));
-                variabeletable.pack();
+            if (variabeleTable == null) {
+                variabeleTable = new VariabeleTable();
+                if (pnt != null) {
+                    variabeleTable.setLocation((int) pnt.getX() + 200, (int) pnt.getY() + 200);
+                }
+                variabeleTable.setPreferredSize(new Dimension(300,300));
+                variabeleTable.pack();
             } else {
-                variabeletable.vulData();
+                variabeleTable.vulData();
             }
 
-            variabeletable.setVisible(true);
-            variabeletable.toFront();
+            variabeleTable.setVisible(true);
+            variabeleTable.toFront();
         }
     }
 
