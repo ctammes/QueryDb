@@ -1,6 +1,8 @@
+import nl.ctammes.common.MijnIni;
+
 import javax.swing.*;
-import javax.xml.stream.Location;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -25,6 +27,10 @@ public final class Utility {
 
     // Initialiseer logger
     private Logger log = Logger.getLogger(QueryForm.class.getName());
+
+    // Initialiseer ini-file
+    private static MijnIni ini = null;
+    private static String inifile = "QueryDb.ini";
 
     private VariabeleDialog variabeleDialog = new VariabeleDialog();
     private VariabeleTable variabeleTable = null;
@@ -307,7 +313,7 @@ public final class Utility {
 
         // Ontbrekende variabelen of variabelen zonder waarde laten invullen
         if (vraagWaarde && toegevoegd) {
-            toonVariabeleTable(null);
+            toonVariabeleTable();
         }
 
         // Variabelen vervolgens vervangen
@@ -389,16 +395,16 @@ public final class Utility {
     }
 
     /**
-     * Obsolete
      * Toon de tabel met variabelen
      * (onderdruk tijdens starten applicatie)
      */
-     void toonVariabeleTable(Point pnt) {
+     void toonVariabeleTable() {
         if (isGestart()) {
             if (variabeleTable == null) {
+                String[] pos = leesIni("Diversen", "posvariabele", "200,200").split(",");
                 variabeleTable = new VariabeleTable();
-                if (pnt != null) {
-                    variabeleTable.setLocation((int) pnt.getX() + 200, (int) pnt.getY() + 200);
+                if (pos.length > 0) {
+                    variabeleTable.setLocation(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
                 }
                 variabeleTable.setPreferredSize(new Dimension(300,300));
                 variabeleTable.pack();
@@ -409,6 +415,48 @@ public final class Utility {
             variabeleTable.setVisible(true);
             variabeleTable.toFront();
         }
+    }
+
+
+    /**
+     * Inifile openen
+     */
+    void initIni() {
+        if (! new File(inifile).exists()) {
+            getLog().info("Inifile " + inifile + " aangemaakt");
+        }
+        ini = new MijnIni(inifile);
+    }
+
+    /**
+     * Lees waarde uit inifile
+     * @param section
+     * @param key
+     * @return
+     */
+    String leesIni(String section, String key) {
+        return leesIni(section, key, null);
+    }
+
+    /**
+     * Lees waarde uit inifile
+     * @param section
+     * @param key
+     * @param def
+     * @return
+     */
+    String leesIni(String section, String key, String def) {
+        return ini.lees(section, key, def);
+    }
+
+    /**
+     * Schrijf waarde naar inifile
+      * @param section
+     * @param key
+     * @param value
+     */
+    void schrijfIni(String section, String key, String value) {
+        ini.schrijf(section, key, value);
     }
 
 

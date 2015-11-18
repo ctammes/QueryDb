@@ -1,3 +1,5 @@
+import nl.ctammes.common.MijnIni;
+
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -11,6 +13,8 @@ public class VariabeleTable extends JDialog implements TableModelListener, KeyLi
     private JButton btnAfbreken;
     private JTable tblVariabele;
     private JButton button1;
+
+    private JFrame frame = new JFrame("Variabelen");
 
     Utility util;
 
@@ -80,6 +84,7 @@ public class VariabeleTable extends JDialog implements TableModelListener, KeyLi
     }
 
     private void onCancel() {
+        util.schrijfIni("Diversen", "posvariabele", String.format("%d,%d",this.getX(), this.getY()));
         dispose();
     }
 

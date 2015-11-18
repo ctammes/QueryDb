@@ -3,6 +3,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.HashMap;
 
 /**
@@ -92,20 +94,6 @@ public class OnderhoudsForm {
                     newCategorie = categorie;
                     newId = newId != -1 ? cmbCategorie.getSelectedIndex() : -1;
 
-
-
-//                    if (cmbCategorie.getSelectedIndex() == -1) {
-//                        newCategorie = (cmbCategorie.getSelectedItem() != null) ? cmbCategorie.getSelectedItem().toString() : "";
-//                    } else {
-//                        String categorie = null;
-//                        if (cmbCategorie.getSelectedItem() != null) {
-//                            categorie = cmbCategorie.getSelectedItem().toString();
-//                        } else {
-//                            categorie = cmbCategorie.getItemAt(0).toString();
-//                        }
-//                        newCategorie = categorie;
-//                    }
-
                     cmbTitel.removeAllItems();
                     txtQuery.setText("");
                     util.vulTitels(newCategorie, cmbTitel, selectedTaal);
@@ -136,25 +124,6 @@ public class OnderhoudsForm {
 
                     toonTitel(newId);
 
-//                    if (cmbTitel.getSelectedIndex() == -1) {
-//                        newTitel = (cmbTitel.getSelectedItem() != null) ? cmbTitel.getSelectedItem().toString() : "";
-//                    } else {
-//                        Titel titel = null;
-//                        if (cmbTitel.getSelectedItem() != null) {
-//                            titel = (Titel) cmbTitel.getSelectedItem();
-//                        } else {
-//                            titel = (Titel) cmbTitel.getItemAt(0);
-//                        }
-//                        newTitel = titel.getTitel();
-//                        newId = newId != -1 ? titel.getId() : -1;
-//
-//                        Window w = SwingUtilities.getWindowAncestor(mainPanel);
-//                        JFrame frame = (JFrame) w;
-//                        frame.setTitle("Query " + newId);
-//
-//                        txtQuery.setText("");
-//                        util.vulTekst(titel, txtQuery, false);
-//                    }
                 }
             }
         });
@@ -250,6 +219,13 @@ public class OnderhoudsForm {
                 util.vulPlainTekst(titel, txtQuery);
             }
         });
+
+    }
+
+
+    public void windowClosing(WindowEvent e) {
+        Window w = SwingUtilities.getWindowAncestor(mainPanel);
+        util.schrijfIni("Diversen", "posonderhoud", String.format("%d,%d",w.getX(), w.getY()));
     }
 
     /**
@@ -303,11 +279,6 @@ public class OnderhoudsForm {
         txtQuery.setText(tekst);
         newId = (titel != null) ? newId = titel.getId() : -1;
 
-//        if (mainPanel.isVisible()) {
-//            Window w = SwingUtilities.getWindowAncestor(mainPanel);
-//            JFrame frame = (JFrame) w;
-//            frame.setTitle("Query " + newId);
-//        }
     }
 
 }

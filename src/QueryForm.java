@@ -2,6 +2,7 @@ import nl.ctammes.common.MijnIni;
 import nl.ctammes.common.MijnLog;
 
 import javax.swing.*;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -57,8 +58,6 @@ public class QueryForm {
     private JMenuItem mnuRefresh;
     private JMenuItem mnuAfsluiten;
 
-    private static MijnIni ini = null;
-    private static String inifile = "QueryDb.ini";
     private static String queryFile = "/home/chris/scripts/snippets/SQL-queries";
 
     private static String dbDir = "/home/chris/IdeaProjects/java/QueryDb";
@@ -178,11 +177,7 @@ public class QueryForm {
                 if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     txtFilenaam.setText(fc.getSelectedFile().toString());
                     queryFile = txtFilenaam.getText();
-                    if (ini == null) {
-                        ini = new MijnIni(inifile);
-                        util.getLog().info("Inifile " + inifile + " aangemaakt");
-                    }
-                    ini.schrijf("Algemeen", "queryfile", txtFilenaam.getText());
+                    util.leesIni("Algemeen", "queryfile", txtFilenaam.getText());
                 } else {
                     util.getLog().info("No Selection ");
                 }
@@ -294,8 +289,8 @@ public class QueryForm {
                     onderhoudsFrame.setContentPane(onderhoudsform.mainPanel);
                     onderhoudsFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
-                    Window w = SwingUtilities.getWindowAncestor(mainPanel);
-                    onderhoudsFrame.setLocation(w.getX() + 100, w.getY() + 100);
+                    String[] pos = util.leesIni("Diversen", "posonderhoud", "200,200").split(",");
+                    onderhoudsFrame.setLocation(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
 
                     Integer titel = -1;
                     if (selectedTitel != null) {
@@ -456,8 +451,7 @@ public class QueryForm {
      * Toon invulscherm voor variabelen
      */
     private void doVariabeleAction() {
-        Window w = SwingUtilities.getWindowAncestor(mainPanel);
-        util.toonVariabeleTable(w.getLocation());
+        util.toonVariabeleTable();
     }
 
     /**
@@ -536,8 +530,7 @@ public class QueryForm {
     private void mnuAfsluitenActionPerformed(ActionEvent evt) {
         // TODO close action en afsluiten gelijktrekken. zie http://tips4java.wordpress.com/2009/05/01/closing-an-application/
         // TODO project stoppen bij afsluiten??
-        ini = new MijnIni(inifile);
-        ini.schrijf("Diversen", "PosQueryDb", String.format("%d,%d",frame.getX(), frame.getY()));
+        util.schrijfIni("Diversen", "posquerydb", String.format("%d,%d",frame.getX(), frame.getY()));
         System.exit(0);
     }
 
@@ -617,35 +610,33 @@ public class QueryForm {
         }
 
         // inifile lezen of initieel vullen
-        if (new File(inifile).exists()) {
-            ini = new MijnIni(inifile);
-            queryFile = ini.lees("Algemeen", "queryfile");
-            String dir = ini.lees("Algemeen", "dbdir");
-            if (dir != null) {
-                dbDir = dir;
-            } else {
-                if (new File(dbDir).exists()) {
-                    ini.schrijf("Algemeen", "dbdir", dbDir);
-                }
-            }
-            String naam = ini.lees("Algemeen", "dbnaam");
-            if (naam != null) {
-                dbNaam = naam;
-            } else {
-                ini.schrijf("Algemeen", "dbnaam", dbNaam);
-            }
-        } else {
-            ini = new MijnIni(inifile);
-            ini.schrijf("Algemeen", "queryfile", queryFile);
-            ini.schrijf("Algemeen", "dbdir", dbDir);
-            ini.schrijf("Algemeen", "dbnaam", dbNaam);
-            util.getLog().info("Inifile " + inifile + " aangemaakt en gevuld");
+        util.initIni();
+
+        String file = util.leesIni("Algemeen", "queryfile", queryFile);
+        if (! file.equals(queryFile)) {
+            util.schrijfIni("Algemeen", "queryfile", file);
+            queryFile = file;
         }
+
+        String dir = util.leesIni("Algemeen", "dbdir", dbDir);
+        if (! new File(dbDir).exists()) {
+            dbDir = dir;
+        } else {
+            dbDir = dir;
+        }
+        util.schrijfIni("Algemeen", "dbdir", dbDir);
+
+        String naam = util.leesIni("Algemeen", "dbnaam", dbNaam);
+        if (! naam.equals(dbNaam)) {
+            util.schrijfIni("Algemeen", "dbnaam", naam);
+            dbNaam = naam;
+        }
+
         util.setDb(new QueryDb(dbDir, dbNaam));
 
         frame.setContentPane(new QueryForm().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        String[] pos = ini.lees(" Diversen", "PosQueryDb", "200,200").split(",");
+        String[] pos = util.leesIni("Diversen", "posquerydb", "200,200").split(",");
         frame.setLocation(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
         frame.pack();
         frame.setVisible(true);
