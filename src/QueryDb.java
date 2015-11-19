@@ -288,6 +288,28 @@ public class QueryDb extends Sqlite {
     }
 
     /**
+     * Lees de id van een taal
+     * @param taal
+     * @return
+     */
+    public Integer leesIdByTaal(String taal) {
+        String sql = "select id from taal where lower(taal)='" + taal.toLowerCase() + "'" ;
+
+        Integer result = -1;
+        try {
+            ResultSet rst = execute(sql);
+            while (rst.next()) {
+                result = Integer.valueOf(rst.getString("id"));
+            }
+        } catch(Exception e) {
+            System.out.println(e.getMessage() + " - " + sql);
+        }
+
+        return result;
+
+    }
+
+    /**
      * Voeg een nieuw Query record toe
      * @param query
      * @return id van laatst toegevoegde record

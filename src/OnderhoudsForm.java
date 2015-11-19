@@ -245,7 +245,7 @@ public class OnderhoudsForm {
 
     /**
      * Maak de comboboxen (un)editable
-      * @param status
+      * @param status wel of niet editable
      */
     private void comboEditable(boolean status) {
         cmbTaal.setEditable(status);

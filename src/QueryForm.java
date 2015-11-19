@@ -57,6 +57,9 @@ public class QueryForm {
     private JMenu mnuBestanden;
     private JMenuItem mnuRefresh;
     private JMenuItem mnuAfsluiten;
+    private JMenu mnuInitieel;
+    private JMenuItem mnuKiesBestand;
+    private JMenuItem mnuLeesBestand;
 
     private static String queryFile = "/home/chris/scripts/snippets/SQL-queries";
 
@@ -121,12 +124,13 @@ public class QueryForm {
         txtZoekTitel.setFocusAccelerator('t');  // Alt-T
 
         // Menu samenstellen
-        mnuBar1 = new javax.swing.JMenuBar();
-        mnuBestanden = new javax.swing.JMenu();
-        mnuAfsluiten = new javax.swing.JMenuItem();
-        mnuRefresh = new javax.swing.JMenuItem();
+        mnuBar1 = new JMenuBar();
+
+        mnuBestanden = new JMenu();
         mnuBestanden.setText("Bestanden");
         mnuBestanden.setMnemonic('b');
+
+        mnuRefresh = new JMenuItem();
         mnuRefresh.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
         mnuRefresh.setText("Refresh");
         mnuRefresh.addActionListener(new java.awt.event.ActionListener() {
@@ -135,6 +139,8 @@ public class QueryForm {
             }
         });
         mnuBestanden.add(mnuRefresh);
+
+        mnuAfsluiten = new JMenuItem();
         mnuAfsluiten.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
         mnuAfsluiten.setText("Afsluiten");
         mnuAfsluiten.addActionListener(new java.awt.event.ActionListener() {
@@ -145,6 +151,30 @@ public class QueryForm {
         mnuBestanden.add(mnuAfsluiten);
 
         mnuBar1.add(mnuBestanden);
+
+        mnuInitieel = new JMenu();
+        mnuInitieel.setText("Initieel");
+
+        mnuKiesBestand = new JMenuItem();
+        mnuKiesBestand.setText("Kies bestand");
+        mnuKiesBestand.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuKiesBestandActionPerformed(evt);
+            }
+        });
+        mnuInitieel.add(mnuKiesBestand);
+
+        mnuLeesBestand = new JMenuItem();
+        mnuLeesBestand.setText("Lees bestand");
+        mnuLeesBestand.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuLeesBestandActionPerformed(evt);
+            }
+        });
+        mnuInitieel.add(mnuLeesBestand);
+
+        mnuBar1.add(mnuInitieel);
+
         frame.setJMenuBar(mnuBar1);
 
         btnVerwerk.addActionListener(new ActionListener() {
@@ -478,6 +508,7 @@ public class QueryForm {
                 if(mat.find()) {
                     if (query != null && tekst != null && tekst.length() > 0) {
                         query.setTekst(tekst.toString());
+                        query.setTaal(util.getDb().leesIdByTaal("SQL"));    // uit het SQL invoerbestand is alles 'SQL'
                         util.getDb().insertQuery(query);
                     }
                     categorie = mat.group(1);
@@ -533,6 +564,36 @@ public class QueryForm {
         util.schrijfIni("Diversen", "posquerydb", String.format("%d,%d",frame.getX(), frame.getY()));
         System.exit(0);
     }
+
+    private void mnuKiesBestandActionPerformed(ActionEvent evt) {
+        JFileChooser fc = new JFileChooser();
+        fc.setCurrentDirectory(new File(queryFile));
+        fc.setDialogTitle("Selecteer query input bestand");
+        fc.setDialogType(JFileChooser.OPEN_DIALOG);
+        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            queryFile = fc.getSelectedFile().toString();
+            util.schrijfIni("Algemeen", "queryfile", queryFile);
+        } else {
+            util.getLog().info("No Selection ");
+        }
+    }
+
+    private void mnuLeesBestandActionPerformed(ActionEvent evt) {
+        if (JOptionPane.showConfirmDialog(null, String.format("Database wordt leeggemaakt en opnieuw gevuld vanuit %s. Doorgaan?",queryFile), "Bevestig", JOptionPane.YES_NO_CANCEL_OPTION) == JOptionPane.YES_OPTION) {
+            util.getDb().truncateQuery();
+            leesFile();
+            if (info.size() == 0) {
+                String tekst = "Geen informatie gevonden in " + queryFile;
+                JOptionPane.showMessageDialog(null, tekst, "Info", JOptionPane.INFORMATION_MESSAGE);
+                util.getLog().info(tekst);
+            } else {
+                util.vulCategorien(cmbCategorie, selectedTaal);
+            }
+        }
+    }
+
+
 
     /**
      * Zoek titels uit de database ahv zoeksleutel
