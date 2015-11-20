@@ -124,6 +124,7 @@ public class OnderhoudsForm {
 
                     toonTitel(newId);
 
+                    util.vulTekst(titel, txtQuery, false);
                 }
             }
         });
