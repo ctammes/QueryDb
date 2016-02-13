@@ -24,6 +24,7 @@
             </constraints>
             <properties>
               <editable value="true"/>
+              <toolTipText value="Kies hier de categorie"/>
             </properties>
           </component>
         </children>
@@ -42,6 +43,7 @@
             </constraints>
             <properties>
               <editable value="true"/>
+              <toolTipText value="Kies hier de titel"/>
             </properties>
           </component>
         </children>
@@ -67,6 +69,9 @@
                   <text value=""/>
                   <toolTipText value="[Alt-Q] Voer hier de tekst in, evt. met variabelen (vb. @zoekdatum)"/>
                 </properties>
+                <clientProperties>
+                  <html.disable class="java.lang.Boolean" value="false"/>
+                </clientProperties>
               </component>
             </children>
           </scrollpane>
@@ -150,6 +155,7 @@
             </constraints>
             <properties>
               <editable value="true"/>
+              <toolTipText value="Kies hier de taal"/>
             </properties>
           </component>
         </children>

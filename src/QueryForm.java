@@ -322,11 +322,11 @@ public class QueryForm {
                     String[] pos = util.leesIni("Diversen", "posonderhoud", "200,200").split(",");
                     onderhoudsFrame.setLocation(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
 
-                    Integer titel = -1;
+                    Integer id = -1;
                     if (selectedTitel != null) {
-                        titel = selectedTitel.getId();
+                        id = selectedTitel.getId();
                     }
-                    onderhoudsFrame.setTitle("Query: " + titel);
+                    onderhoudsFrame.setTitle("Query: " + id);
                     onderhoudsFrame.pack();
                     onderhoudsFrame.setVisible(true);
                 } else if (!onderhoudsFrame.isShowing()) {      // hidden
@@ -679,6 +679,7 @@ public class QueryForm {
             queryFile = file;
         }
 
+        // Bij directory altijd forward slash gebruiken; werkt onder Linux en Windows
         String dir = util.leesIni("Algemeen", "dbdir", dbDir);
         if (! new File(dbDir).exists()) {
             dbDir = dir;

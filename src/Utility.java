@@ -192,7 +192,7 @@ public final class Utility {
     void vulTitels(String categorie, JComboBox combo, Taal taal, Titel titel) {
         vulTitels(categorie, combo, taal);
         //TODO toont juiste index nog niet
-        combo.getModel().setSelectedItem(titel.getTitel());
+        combo.getModel().setSelectedItem(titel);
     }
 
     /**
