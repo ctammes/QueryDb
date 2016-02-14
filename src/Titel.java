@@ -13,6 +13,10 @@ public class Titel {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getTitel() {
         return titel;
     }

@@ -1,10 +1,7 @@
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.HashMap;
 
 /**
@@ -20,7 +17,7 @@ public class OnderhoudsForm {
     private JComboBox cmbCategorie;
     private JComboBox cmbTitel;
     private JButton btnOpslaan;
-    private JButton btnCancel;
+    private JButton btnAfbreken;
     private JButton btnNieuw;
     private JButton btnVerwijderen;
     private JButton btnLezen;
@@ -30,18 +27,24 @@ public class OnderhoudsForm {
     Utility util;
 
     // Dit zijn de (nieuwe) waarden die opgeslagen moeten worden
-    private int queryId = 0;
-    private String newCategorie = null;
-    private Taal selectedTaal = null;
-    private Titel selectedTitel = null;
     private HashMap<String, String> variabelen;
+
+    private State savedState;       // tbv. Afbreken - terugdraaien naar laatste state
+    private State currentState;     // huidige waarden tbv. Opslaan
 
     // TODO wat doen bij selectie Categorie? Titels ook aanpassen??
 
-    public OnderhoudsForm(String categorie, Titel titel, String tekst, final Taal taal) {
+    public OnderhoudsForm(State state) {
+        savedState = new State(state);
+        try {
+            currentState = (State) savedState.clone();
+        } catch (Exception e) {
+
+        }
+
         util = Utility.getInstance();
         util.vulTalen(cmbTaal);
-        selectedTaal = (Taal) taal;
+//        selectedTaal = (Taal) taal;
 
         // om een of andere reden is het object niet zichtbaar als dit vanuuit de designer wordt gedaan
         comboEditable(false);
@@ -49,7 +52,7 @@ public class OnderhoudsForm {
         // Sneltoetsen
         btnNieuw.setMnemonic('n');
         btnOpslaan.setMnemonic('s');
-        btnCancel.setMnemonic('a');
+        btnAfbreken.setMnemonic('a');
         btnVerwijderen.setMnemonic('w');
         btnLezen.setMnemonic('l');
         txtQuery.setFocusAccelerator('q');
@@ -69,12 +72,13 @@ public class OnderhoudsForm {
                         // Nieuwe taal toegevoegd
                         taal = new Taal(-1, cmbTaal.getModel().getSelectedItem().toString());
                     }
-                    selectedTaal = taal;
+                    if (currentState != null) {
+                        currentState.setTaal(taal);
+                    }
 
                     cmbCategorie.removeAllItems();
                     cmbTitel.removeAllItems();
                     txtQuery.setText("");
-//                    util.vulCategorien(cmbCategorie, selectedTaal);
                     updateCombo();
 //                    util.vulTekst(titel, txtTekst, util.isGestart());
                 }
@@ -88,18 +92,21 @@ public class OnderhoudsForm {
                     if (cmbCategorie.getModel().getSelectedItem() instanceof String) {
                         categorie = cmbCategorie.getModel().getSelectedItem().toString();
                     }
-                    newCategorie = categorie;
-                    queryId = queryId != -1 ? cmbCategorie.getSelectedIndex() : -1;
+                    if (currentState != null) {
+                        currentState.setCategorie(categorie);
+
+                    }
+//                    queryId = queryId != -1 ? cmbCategorie.getSelectedIndex() : -1;
 
                     cmbTitel.removeAllItems();
                     txtQuery.setText("");
-                    util.vulTitels(newCategorie, cmbTitel, selectedTaal);
+                    util.vulTitels(currentState.getCategorie(), cmbTitel, currentState.getTaal());
                     if (cmbTitel.getModel().getSize() > 0) {
                         Titel titel = (Titel) cmbTitel.getItemAt(0);
-                        selectedTitel = titel;
-                        queryId = queryId != -1 ? titel.getId() : -1;
+                        currentState.setTitel(titel);
+//                        queryId = queryId != -1 ? titel.getId() : -1;
 
-                        toonTitel(queryId);
+                        toonTitel(currentState.maakTitel());
 
                         util.vulTekst(titel, txtQuery, false);
                     }
@@ -117,103 +124,116 @@ public class OnderhoudsForm {
                     } else if (cmbTitel.getModel().getSelectedItem() instanceof Titel) {
                         titel = (Titel) cmbTitel.getModel().getSelectedItem();
                     }
-                    selectedTitel = titel;
+                    if (currentState != null) {
+                        currentState.setTitel(titel);
+                    }
 
-                    queryId = titel.getId();
-                    toonTitel(queryId);
+//                    queryId = titel.getId();
+                    toonTitel(currentState.maakTitel());
 
                     util.vulTekst(titel, txtQuery, false);
+                    currentState.setTekst(txtQuery.getText());
                 }
             }
         });
         btnOpslaan.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                Titel titel = null;
                 String msg = null;
                 Integer taalId = 0;
+                Taal taal = currentState.getTaal();
+                String categorie = currentState.getCategorie();
+                Titel titel = currentState.getTitel();
+                String tekst = currentState.getTekst();
 
                 // Nieuwe taal?
-                if (selectedTaal.getId() == -1) {
-                    taalId = util.insertTaalDb(selectedTaal.getTaal());
+                if (taal.getId() == -1) {
+                    taalId = util.insertTaalDb(currentState.getTaal().getTaal());
                 } else {
-                    taalId = selectedTaal.getId();
+                    taalId = taal.getId();
                 }
 
-                if (queryId == -1) {
-                    if (!newCategorie.equals("") && newCategorie != null && !selectedTitel.getTitel().equals("") && selectedTitel.getTitel() != null && !txtQuery.getText().equals("")) {
-                        msg = "<html>Er wordt een nieuwe query gemaakt: <br>taal: " + selectedTaal.getTaal() + "<br>categorie: " + newCategorie + "<br>titel: " + selectedTitel.getTitel() + ".<br> Doorgaan ?<html>";
+                if (currentState.isNieuw()) {
+                    if (!categorie.equals("") && categorie != null
+                            && !titel.getTitel().equals("") && titel.getTitel() != null
+                            && !tekst.equals("")) {
+                                msg = "<html>Er wordt een nieuwe query gemaakt: <table><tr><td>taal: </td><td>" + taal.getTaal() + "</td></tr><tr><td>categorie: </td></td>" + categorie + "</td></tr><tr><td>titel: </td>" + titel.getTitel() + "</td></tr></table>Doorgaan ?<html>";
                     } else {
                         JOptionPane.showMessageDialog(null, "Niet alle velden ingevuld!", "Waarschuwing", JOptionPane.WARNING_MESSAGE);
                         return;
                     }
                 } else {
-                    msg = "Gegevens worden opgeslagen onder id " + selectedTitel.getId() + ". Doorgaan ?";
+                    msg = "Gegevens worden opgeslagen onder id " + titel.getId() + ". Doorgaan ?";
                 }
                 if (JOptionPane.showConfirmDialog(null, msg, "Bevestig keuze", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    if (queryId == -1) {
-                        util.getLog().info("Query toevoegen: " + selectedTitel.getTitel());
-                        Query query = new Query(newCategorie, selectedTitel.getTitel(), txtQuery.getText(), taalId);
-                        queryId = util.insertQueryDb(query);
+                    if (currentState.isNieuw()) {
+                        util.getLog().info("Query toevoegen: " + titel.getId());
+                        Query query = new Query(categorie, titel.getTitel(), tekst, taalId);
+                        int id = util.insertQueryDb(query);
+                        titel.setId(id);
 
                         comboEditable(false);
                     } else {
-                        util.getLog().info("Query wijzigen: " + selectedTitel.getId() + " - " + selectedTitel.getTitel());
-                        util.getDb().wijzigQueryTekst(titel, txtQuery.getText());
+                        util.getLog().info("Query wijzigen: " + titel.getId() + " - " + titel.getTitel());
+                        util.getDb().wijzigQueryTekst(titel, tekst);
                     }
 
                     // Bijwerken comboboxen
-                    util.verversCombo(cmbCategorie, cmbTitel, selectedTaal, selectedTitel);
-                    cmbCategorie.getModel().setSelectedItem(newCategorie);
-                    cmbTitel.getModel().setSelectedItem(selectedTitel);
-                    util.vulPlainTekst(selectedTitel, txtQuery);
+                    util.verversCombo(cmbCategorie, cmbTitel, taal, titel);
+                    cmbCategorie.getModel().setSelectedItem(categorie);
+                    cmbTitel.getModel().setSelectedItem(titel);
+                    util.vulPlainTekst(titel, txtQuery);
 
+                    currentState = new State(taal, categorie, titel, tekst);
+                    savedState.setState(currentState);
                 }
             }
         });
-        btnCancel.addActionListener(new ActionListener() {
+        btnAfbreken.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 String msg;
-                if (queryId == -1) {
+                if (currentState.isNieuw()) {
                     msg = "Gegevens toevoegen afgebroken";
                 } else {
                     msg = "Gegevens wijzigen afgebroken";
                 }
                 JOptionPane.showMessageDialog(null, msg, "info", JOptionPane.INFORMATION_MESSAGE);
                 comboEditable(false);
-                if (queryId == -1 ) {
-                    // TODO iets doen met queryId -1
-                } else {
-                    util.vulPlainTekst(selectedTitel, txtQuery);
-                }
+                stelVeldenIn(savedState);
+                currentState.setState(savedState);
+//                if (queryId == -1 ) {
+//                } else {
+//                    util.vulPlainTekst(selectedTitel, txtQuery);
+//                }
             }
         });
         btnVerwijderen.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                Titel titel = (Titel) cmbTitel.getSelectedItem();
+                Titel titel = currentState.getTitel();
                 String msg = "Je gaat de query met id " + titel.getId() + " verwijderen. Doorgaan ?";
                 if (JOptionPane.showConfirmDialog(null, msg, "Bevestig keuze", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    int index = cmbTitel.getSelectedIndex();
+//                    int index = cmbTitel.getSelectedIndex();
                     util.getDb().verwijderQueryTekst(titel);
                     util.getLog().info("Query verwijderen: " + titel.getId() + " - " + titel.getTitel());
-                    index =  index < cmbTitel.getItemCount() ? index : index - 1;
-                    util.verversCombo(cmbCategorie, cmbTitel, selectedTaal, null);
+//                    index =  index < cmbTitel.getItemCount() ? index : index - 1;
+                    util.verversCombo(cmbCategorie, cmbTitel, currentState.getTaal(), null);
                 }
             }
         });
         btnNieuw.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                queryId = -1;
-                toonTitel(queryId);
 
+                currentState.setNieuw(true);
+                currentState.setTitel((Titel) cmbTitel.getModel().getSelectedItem());
+                currentState.setCategorie(cmbCategorie.getModel().getSelectedItem().toString());
+                currentState.setTekst("");
+                toonTitel(currentState.maakTitel());
+
+                // TODO nodig ???
                 cmbTitel.getModel().setSelectedItem("");
-                txtQuery.setText("");
-
-                newCategorie = cmbCategorie.getModel().getSelectedItem().toString();
-                selectedTitel = (Titel) cmbTitel.getModel().getSelectedItem();
 
                 comboEditable(true);
 
@@ -229,8 +249,16 @@ public class OnderhoudsForm {
 
         // Vul de velden met de inhoud uit het vorige venster
         // Aan het einde van de cnstructor, anders kloppen de comboboxen niet, die moeten er eerst zijn
-        stelVeldenIn(categorie, titel, tekst, taal);
+        stelVeldenIn(currentState);
 
+        txtQuery.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (currentState != null) {
+                    currentState.setTekst(txtQuery.getText());
+                }
+            }
+        });
     }
 
 
@@ -243,13 +271,14 @@ public class OnderhoudsForm {
      * Bijwerken van de comboboxen als de taal gewijzigd is
      */
     private void updateCombo() {
-        util.vulCategorien(cmbCategorie, selectedTaal);
+        util.vulCategorien(cmbCategorie, currentState.getTaal());
         if (cmbCategorie.getModel().getSize() > 0) {
-            util.vulTitels(cmbCategorie.getModel().getSelectedItem().toString(), cmbTitel, selectedTaal);
+            util.vulTitels(cmbCategorie.getModel().getSelectedItem().toString(), cmbTitel, currentState.getTaal());
             txtQuery.setText("");
             if (cmbTitel.getModel().getSize() > 0) {
                 util.vulTekst((Titel) cmbTitel.getModel().getSelectedItem(), txtQuery, false);
             }
+            currentState.setTekst(txtQuery.getText());
         }
 
     }
@@ -277,23 +306,37 @@ public class OnderhoudsForm {
         }
     }
 
+    protected void toonTitel(String tekst) {
+        Window w = SwingUtilities.getWindowAncestor(mainPanel);
+        JFrame frame = (JFrame) w;
+        // Overslaan tijdens initialisatie
+        if (w != null) {
+            frame.setTitle(tekst);
+        }
+    }
+
     /**
      * Vul velden (bij instantiation vanuit hoofdscherm)
-     * @param categorie
-     * @param titel
-     * @param tekst
+     * @param state
      */
-    protected void stelVeldenIn(String categorie, Titel titel, String tekst, Taal taal) {
+    protected void stelVeldenIn(State state) {
         util.vulTalen(cmbTaal);
         updateCombo();
 
         // let op: getModel() ertussen, anders werkt het niet!
-        cmbTaal.getModel().setSelectedItem(taal);
-        cmbCategorie.getModel().setSelectedItem(categorie);
+        cmbTaal.getModel().setSelectedItem(state.getTaal());
+        cmbCategorie.getModel().setSelectedItem(state.getCategorie());
 //        util.vulTitels(categorie, cmbTitel, taal);
-        cmbTitel.getModel().setSelectedItem(titel);
-        txtQuery.setText(tekst);
-        queryId = (titel != null) ? queryId = titel.getId() : -1;
+        cmbTitel.getModel().setSelectedItem(state.getTitel());
+        txtQuery.setText(state.getTekst());
+//        queryId = (titel != null) ? queryId = titel.getId() : -1;
+
+        savedState = new State(state);
+        try {
+            currentState = (State) savedState.clone();
+        } catch (Exception e) {
+
+        }
     }
 
 }

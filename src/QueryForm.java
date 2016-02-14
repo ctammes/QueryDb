@@ -60,6 +60,8 @@ public class QueryForm {
     private JMenu mnuInitieel;
     private JMenuItem mnuKiesBestand;
     private JMenuItem mnuLeesBestand;
+    private JMenu mnuExtra;
+    private JMenuItem mnuVariabele;
 
     private static String queryFile = "/home/chris/scripts/snippets/SQL-queries";
 
@@ -75,10 +77,8 @@ public class QueryForm {
 
     private OnderhoudsForm onderhoudsform = null;
 
-    private String selectedCategorie;
-    private Titel selectedTitel;
-    private Taal selectedTaal;
-    private Integer queryId;
+    private State currentState;     // huidige waarden
+    private boolean parseVariabelen = true;
 
     // te vervangen variabelen
 //    private HashMap<String, String> variabelen = null;
@@ -106,13 +106,11 @@ public class QueryForm {
         txtDatum.setText(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()).toString());
         doAction("txtdatum");
 
-        // Vullen van de comboboxen vanuit de database
-        util.vulTalen(cmbTaal);
-        selectedTaal = (Taal) cmbTaal.getItemAt(0);
-        updateCombo();
+        // automatisch vullen van variabelen
+        parseVariabelen = util.leesIni("Algemeen", "parsevariabelen", "1") == "1" ? true : false;
+
         //TODO ???
 //        Titel titel = selectedTitel;
-        util.vulTekst(selectedTitel, txtTekst, util.isGestart());
 
         // Sneltoetsen
         btnZoekTitel.setMnemonic('z');          // Alt-Z
@@ -175,6 +173,22 @@ public class QueryForm {
 
         mnuBar1.add(mnuInitieel);
 
+        mnuExtra = new JMenu();
+        mnuExtra.setText("Extra");
+        mnuExtra.setMnemonic('x');
+
+        mnuVariabele = new JCheckBoxMenuItem();
+        mnuVariabele.setText("Vervang variabelen");
+        mnuVariabele.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuVariabeleActionPerformed(evt);
+            }
+        });
+        mnuVariabele.setSelected(parseVariabelen);
+        mnuExtra.add(mnuVariabele);
+
+        mnuBar1.add(mnuExtra);
+
         frame.setJMenuBar(mnuBar1);
 
         btnVerwerk.addActionListener(new ActionListener() {
@@ -190,7 +204,7 @@ public class QueryForm {
                         JOptionPane.showMessageDialog(null, tekst, "Info", JOptionPane.INFORMATION_MESSAGE);
                         util.getLog().info(tekst);
                     } else {
-                        util.vulCategorien(cmbCategorie, selectedTaal);
+                        util.vulCategorien(cmbCategorie, currentState.getTaal());
                     }
                 }
             }
@@ -224,7 +238,7 @@ public class QueryForm {
                     } else {
                         taal = (Taal) cmbTaal.getItemAt(0);
                     }
-                    selectedTaal = taal;
+                    currentState.setTaal(taal);
                     updateCombo();
                 }
             }
@@ -239,12 +253,12 @@ public class QueryForm {
                     } else {
                         categorie = cmbCategorie.getItemAt(0).toString();
                     }
-                    selectedCategorie = categorie;
+                    currentState.setCategorie(categorie);
 
-                    util.vulTitels(categorie, cmbTitel, selectedTaal);
+                    util.vulTitels(categorie, cmbTitel, currentState.getTaal());
                     Titel titel = (Titel) cmbTitel.getItemAt(0);
-                    selectedTitel = titel;
-                    util.vulTekst(titel, txtTekst, util.isGestart());
+                    currentState.setTitel(titel);
+                    util.vulTekst(titel, txtTekst, util.isGestart() && parseVariabelen);
                 }
             }
         });
@@ -258,8 +272,7 @@ public class QueryForm {
                     } else {
                         titel = (Titel) cmbTitel.getItemAt(0);
                     }
-                    selectedTitel = titel;
-                    util.vulTekst(titel, txtTekst, util.isGestart());
+                    util.vulTekst(titel, txtTekst, util.isGestart() && parseVariabelen);
                 }
             }
         });
@@ -269,10 +282,10 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 //TODO op een of andere manier de oorspronkelijke keuzes weer tonen; worden nu gereset
                 util.vulTalen(cmbTaal);
-                cmbTaal.getModel().setSelectedItem(selectedTaal);
+                cmbTaal.getModel().setSelectedItem(currentState.getTaal());
 
-                cmbCategorie.getModel().setSelectedItem(selectedCategorie);
-                cmbTitel.getModel().setSelectedItem(selectedTitel);
+                cmbCategorie.getModel().setSelectedItem(currentState.getCategorie());
+                cmbTitel.getModel().setSelectedItem(currentState.getTitel());
 
             }
         });
@@ -315,27 +328,27 @@ public class QueryForm {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (onderhoudsFrame == null){                   // initialisatie
                     onderhoudsFrame = new JFrame("OnderhoudsForm");
-                    onderhoudsform = new OnderhoudsForm(selectedCategorie, selectedTitel, txtTekst.getText(), selectedTaal);
+                    onderhoudsform = new OnderhoudsForm(currentState);
                     onderhoudsFrame.setContentPane(onderhoudsform.mainPanel);
                     onderhoudsFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
                     String[] pos = util.leesIni("Diversen", "posonderhoud", "200,200").split(",");
                     onderhoudsFrame.setLocation(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
 
-                    Integer id = -1;
-                    if (selectedTitel != null) {
-                        id = selectedTitel.getId();
-                    }
-                    onderhoudsFrame.setTitle("Query: " + id);
+//                    Integer id = -1;
+//                    if (selectedTitel != null) {
+//                        id = selectedTitel.getId();
+//                    }
+//                    onderhoudsFrame.setTitle("Query: " + id);
                     onderhoudsFrame.pack();
                     onderhoudsFrame.setVisible(true);
                 } else if (!onderhoudsFrame.isShowing()) {      // hidden
-                    onderhoudsform.stelVeldenIn(selectedCategorie, selectedTitel, txtTekst.getText(), selectedTaal);
-                    onderhoudsFrame.setTitle("Query: " + selectedTitel.getId());
+                    onderhoudsform.stelVeldenIn(currentState);
+//                    onderhoudsFrame.setTitle("Query: " + selectedTitel.getId());
                     onderhoudsFrame.setVisible(true);
                 } else {                                        // heeft geen focus
-                    onderhoudsform.stelVeldenIn(selectedCategorie, selectedTitel, txtTekst.getText(), selectedTaal);
-                    onderhoudsFrame.setTitle("Query: " + selectedTitel.getId());
+                    onderhoudsform.stelVeldenIn(currentState);
+//                    onderhoudsFrame.setTitle("Query: " + selectedTitel.getId());
                     onderhoudsFrame.toFront();
                 }
 
@@ -445,6 +458,20 @@ public class QueryForm {
                 util.setVariabele("ccv_id", txtCcvId.getText());
             }
         });
+
+        // Vullen van de comboboxen vanuit de database
+        util.vulTalen(cmbTaal);
+        currentState = new State((Taal) cmbTaal.getItemAt(0));
+        updateCombo();
+        util.vulTekst(currentState.getTitel(), txtTekst, util.isGestart() && parseVariabelen);
+        currentState = new State((Taal) cmbTaal.getModel().getSelectedItem(), cmbCategorie.getModel().getSelectedItem().toString(), (Titel) cmbTitel.getModel().getSelectedItem(), txtTekst.getText());
+
+    }
+
+    private void mnuVariabeleActionPerformed(ActionEvent evt) {
+        AbstractButton aButton = (AbstractButton) evt.getSource();
+        parseVariabelen = aButton.getModel().isSelected();
+        util.schrijfIni("Algemeen", "parsevariabelen", (parseVariabelen ? "1" : "0"));
     }
 
     /**
@@ -452,16 +479,18 @@ public class QueryForm {
      */
     private void updateCombo() {
         txtTekst.setText("");
-        util.vulCategorien(cmbCategorie, selectedTaal);
-        selectedCategorie = null;
-        selectedTitel = null;
+        util.vulCategorien(cmbCategorie, currentState.getTaal());
+        String categorie = null;
+        Titel titel = null;
         if (cmbCategorie.getModel().getSize() > 0) {
-            selectedCategorie = cmbCategorie.getItemAt(0).toString();
+            categorie = cmbCategorie.getItemAt(0).toString();
         }
-        util.vulTitels(selectedCategorie, cmbTitel, selectedTaal);
+        util.vulTitels(categorie, cmbTitel, currentState.getTaal());
         if (cmbTitel.getModel().getSize() > 0) {
-            selectedTitel = (Titel) cmbTitel.getItemAt(0);
+            titel = (Titel) cmbTitel.getItemAt(0);
         }
+        currentState.setCategorie(categorie);
+        currentState.setTitel(titel);
     }
 
     /**
@@ -552,10 +581,10 @@ public class QueryForm {
     private void mnuRefreshActionPerformed(ActionEvent evt) {
         //TODO op een of andere manier de oorspronkelijke keuzes weer tonen; worden nu gereset
         util.vulTalen(cmbTaal);
-        cmbTaal.getModel().setSelectedItem(selectedTaal);
+        cmbTaal.getModel().setSelectedItem(currentState.getTaal());
 
-        cmbCategorie.getModel().setSelectedItem(selectedCategorie);
-        cmbTitel.getModel().setSelectedItem(selectedTitel);
+        cmbCategorie.getModel().setSelectedItem(currentState.getCategorie());
+        cmbTitel.getModel().setSelectedItem(currentState.getTitel());
     }
 
     private void mnuAfsluitenActionPerformed(ActionEvent evt) {
@@ -588,7 +617,7 @@ public class QueryForm {
                 JOptionPane.showMessageDialog(null, tekst, "Info", JOptionPane.INFORMATION_MESSAGE);
                 util.getLog().info(tekst);
             } else {
-                util.vulCategorien(cmbCategorie, selectedTaal);
+                util.vulCategorien(cmbCategorie, currentState.getTaal());
             }
         }
     }
@@ -601,7 +630,7 @@ public class QueryForm {
      * @return
      */
     private Object[] zoekTitelsDb(String sleutel) {
-        return util.getDb().zoekTitels(sleutel, selectedTaal);
+        return util.getDb().zoekTitels(sleutel, currentState.getTaal());
     }
 
     /**
@@ -638,23 +667,6 @@ public class QueryForm {
         }
         return titels;
 
-    }
-
-    /**
-     * Geef de tekst in de categorie combobox
-     * @return
-     */
-    protected String getCategorie() {
-        return selectedCategorie;
-    }
-
-
-    /**
-     * Geef de tekst in de titel combobox
-     * @return
-     */
-    protected Titel getTitel() {
-        return selectedTitel;
     }
 
     public static void main(String[] args) {
