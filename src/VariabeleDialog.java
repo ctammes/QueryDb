@@ -11,7 +11,9 @@ public class VariabeleDialog extends JDialog {
     public VariabeleDialog() {
         setContentPane(contentPane);
         setModal(true);
+        setVisible(false);
         getRootPane().setDefaultButton(buttonOK);
+        pack();
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

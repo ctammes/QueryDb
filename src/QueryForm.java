@@ -96,9 +96,9 @@ public class QueryForm {
 
     public QueryForm() {
         // Dialoogvenster voor wijzigen en toevoegen variabelen
-        util.getVariabeleDialog().pack();
-        util.getVariabeleDialog().setModal(true);
-        util.getVariabeleDialog().setVisible(false);
+//        util.getVariabeleDialog().pack();
+//        util.getVariabeleDialog().setModal(true);
+//        util.getVariabeleDialog().setVisible(false);
 
         // Initialisatie van het scherm
         txtFilenaam.setText(queryFile);

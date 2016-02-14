@@ -98,7 +98,7 @@
                 </constraints>
                 <properties>
                   <text value="Zoek titel"/>
-                  <toolTipText value=""/>
+                  <toolTipText value="Zoek tekst in titelvelden"/>
                 </properties>
               </component>
             </children>
